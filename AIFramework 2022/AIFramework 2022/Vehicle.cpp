@@ -29,7 +29,7 @@ HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 	m_lastPosition = Vector2D(0, 0);
 
 	m_Steering = new SteeringBehaviours(this);
-	m_Mass = 1.0f;
+	m_Mass = 3.0f;
 	
 
 	return hr;
@@ -38,7 +38,6 @@ HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 void Vehicle::update(const float deltaTime)
 {
 #pragma region Steering Behaviour Based Movement
-	OuputStrings::OutputVector(m_targetPosition);
 	if (m_SeekOn || m_ArriveOn || m_FleeOn || m_PursuitOn || m_ObjectAvoidance || m_WanderingOn)
 	{
 		m_Steering->SteeringUpdate();

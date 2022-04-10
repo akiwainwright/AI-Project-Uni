@@ -8,6 +8,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "OuputStrings.h"
+
 AIManager::AIManager()
 {
 	m_pCar = nullptr;
@@ -131,7 +133,7 @@ void AIManager::keyUp(WPARAM param)
 void AIManager::keyDown(WPARAM param)
 {
 	// hint 65-90 are a-z
-	const WPARAM key_a = 65;
+	const WPARAM key_a = 0x41;
 	const WPARAM key_s = 0x53;
     const WPARAM key_t = 84;
 
@@ -139,7 +141,23 @@ void AIManager::keyDown(WPARAM param)
     {
         case key_a:
         {
-            OutputDebugStringA("a Down \n");
+            if (m_pCar->GetArriveState())
+            {
+                m_pCar->ToggleArrive(false);
+                OutputDebugStringA("Arrive Turned Off");
+            }
+            else
+            {
+                if (m_pCar->GetSeekState())
+                {
+                    OutputDebugStringA("Cannot Arrive While Seeking \n");
+                }
+                else
+                {
+                    m_pCar->ToggleArrive(true);
+                    OutputDebugStringA("Arrive Turned On \n");
+                }
+            }
             break;
         }
 		case key_s:
@@ -147,6 +165,7 @@ void AIManager::keyDown(WPARAM param)
             if (m_pCar->GetSeekState())
             {
                 m_pCar->ToggleSeek(false);
+                OutputDebugStringA("Seeking Turned Off");
             }
             else
             {
@@ -164,6 +183,7 @@ void AIManager::keyDown(WPARAM param)
 		}
         case key_t:
 		{
+            OuputStrings::OutputVector(m_pCar->GetTargetPosition());
             break;
         }
         // etc

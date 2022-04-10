@@ -9,6 +9,8 @@ private:
 	Vector2D m_CurrentForce;
 	Vector2D m_SteerForce;
 
+	float m_ArriveRadius;
+
 	class Vehicle* m_car;
 
 public:
@@ -23,6 +25,9 @@ private:
 
 	//Private Functions
 	Vector2D Seek();
+	Vector2D Arrive();
+
+	Vector2D StopMoving();
 	
 
 };
