@@ -6,7 +6,7 @@ class SteeringBehaviours
 private:
 
 	//Private Variables
-	Vector2D m_CurrentForceDirection;
+	Vector2D m_CurrentForce;
 	Vector2D m_SteerForce;
 
 	class Vehicle* m_car;
@@ -18,7 +18,6 @@ public:
 
 	//Public functions
 	void SteeringUpdate();
-	void ResetSteerForce();
 
 private:
 

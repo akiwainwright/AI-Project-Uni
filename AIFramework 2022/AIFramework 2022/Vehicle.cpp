@@ -5,7 +5,7 @@
 #include <string>
 
 #define NORMAL_MAX_SPEED 200
-#define MAX_SPEED 3.0f
+
 
 HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 {
@@ -44,17 +44,9 @@ void Vehicle::update(const float deltaTime)
 		m_Steering->SteeringUpdate();
 
 		m_Velocity = m_Velocity + m_Acceleration * deltaTime;
+		m_Velocity.Truncate(MAX_SPEED);
 
-		if(m_Velocity.Length() > MAX_SPEED)
-		{
-			m_ClampedVelocity = ClampVector(m_Velocity, MAX_SPEED);
-			m_currentPosition += m_ClampedVelocity;
-		}
-		else
-		{
-			m_ClampedVelocity = m_Velocity;
-			m_currentPosition += m_ClampedVelocity;	
-		}
+		m_currentPosition += m_Velocity;
 
 #pragma region Keeping Car On Screen
 		if (m_currentPosition.x > SCREEN_WIDTH / 2)
@@ -76,7 +68,6 @@ void Vehicle::update(const float deltaTime)
 		}
 #pragma  endregion 
 		
-		m_Steering->ResetSteerForce();
 	}
 
 	

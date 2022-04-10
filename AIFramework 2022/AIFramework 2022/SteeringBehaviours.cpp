@@ -1,9 +1,8 @@
 #include "SteeringBehaviours.h"
+
+#include "constants.h"
 #include "Vehicle.h"
 #include "OuputStrings.h"
-
-#define MAX_FORCE 5.0f
-#define MAX_VELOCITY 5.0f
 
 
 SteeringBehaviours::SteeringBehaviours(Vehicle* car)
@@ -18,32 +17,26 @@ SteeringBehaviours::~SteeringBehaviours()
 }
 
 void SteeringBehaviours::SteeringUpdate()
-{
-	m_CurrentForceDirection = m_car->getPosition() + m_car->GetVelocity();
-	
+{	
 	if (m_car->GetSeekState())
 	{
 		Seek();
 	}
 	
-	if (m_SteerForce.Length() > MAX_FORCE)
-	{
-		m_SteerForce = ClampVector(m_SteerForce, MAX_FORCE);
-	}
+	m_SteerForce.Truncate(MAX_FORCE);
 	
 	m_car->CalculateAcceleration(m_SteerForce);	
-}
-
-void SteeringBehaviours::ResetSteerForce()
-{
-	m_SteerForce = Vector2D(0.0f, 0.0f);
 }
 
 Vector2D SteeringBehaviours::Seek()
 {
 
-	Vector2D desiredForceDirection = m_car->GetTargetPosition() - m_car->getPosition();
-	Vector2D SeekForce = desiredForceDirection - m_CurrentForceDirection;
+	Vector2D desiredForce = m_car->GetTargetPosition() - m_car->getPosition();
+	desiredForce.Normalize();
+	desiredForce *= MAX_VELOCITY;
+	
+	Vector2D SeekForce = desiredForce - m_car->GetVelocity();
+	
 	m_SteerForce += SeekForce;
 
 	return m_SteerForce;
