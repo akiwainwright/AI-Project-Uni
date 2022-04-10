@@ -1,6 +1,10 @@
 #include "Vehicle.h"
+#include "OuputStrings.h"
+#include <sstream>
+#include <string>
 
 #define NORMAL_MAX_SPEED 200
+#define MAX_SPEED 5.0f
 
 HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 {
@@ -23,26 +27,31 @@ HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 
 	m_lastPosition = Vector2D(0, 0);
 
+	m_Steering = new SteeringBehaviours(this);
+	m_Mass = 100.0f;
+	
+
 	return hr;
 }
 
 void Vehicle::update(const float deltaTime)
 {
-	// consider replacing with force based acceleration / velocity calculations
-	Vector2D vecTo = m_positionTo - m_currentPosition;
-	float velocity = deltaTime * m_currentSpeed;
+	if (m_SeekOn || m_ArriveOn || m_FleeOn || m_PursuitOn || m_ObjectAvoidance || m_WanderingOn)
+	{
+		m_Steering->SteeringUpdate();
 
-	float length = (float)vecTo.Length();
-	// if the distance to the end point is less than the car would move, then only move that distance. 
-	if (length > 0) {
-		vecTo.Normalize();
-		if(length > velocity)
-			vecTo *= velocity;
-		else
-			vecTo *= length;
+		m_Velocity = m_Velocity + m_Acceleration * deltaTime;
 
-		m_currentPosition += vecTo;
+		if(m_Velocity.Length() > MAX_SPEED)
+		{
+			m_Velocity.Normalize();
+			m_Velocity *= MAX_SPEED;
+		}
+		OuputStrings::OutputVector(m_Velocity);
+
+		m_currentPosition += m_Velocity;
 	}
+	
 
 	// rotate the object based on its last & current position
 	Vector2D diff = m_currentPosition - m_lastPosition;

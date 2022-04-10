@@ -5,6 +5,8 @@
 #include "Waypoint.h"
 #include "main.h"
 #include "constants.h"
+#include <iostream>
+#include <sstream>
 
 AIManager::AIManager()
 {
@@ -64,7 +66,7 @@ void AIManager::update(const float fDeltaTime)
 {
     for (unsigned int i = 0; i < m_waypointManager.getWaypointCount(); i++) {
         m_waypointManager.getWaypoint(i)->update(fDeltaTime);
-        //AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
+        AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
     }
 
     for (int i = 0; i < m_waypointManager.getQuadpointCount(); i++)
@@ -110,7 +112,7 @@ void AIManager::mouseUp(int x, int y)
 		return;
 
     // steering mode
-    m_pCar->setPositionTo(wp->getPosition());
+    m_pCar->SetTargetPosition(wp->getPosition());    
 }
 
 void AIManager::keyUp(WPARAM param)
@@ -130,26 +132,11 @@ void AIManager::keyDown(WPARAM param)
 {
 	// hint 65-90 are a-z
 	const WPARAM key_a = 65;
-	const WPARAM key_s = 83;
+	const WPARAM key_s = 0x53;
     const WPARAM key_t = 84;
 
     switch (param)
     {
-        case VK_NUMPAD0:
-        {
-            OutputDebugStringA("0 pressed \n");
-            break;
-        }
-        case VK_NUMPAD1:
-        {
-            OutputDebugStringA("1 pressed \n");
-            break;
-        }
-        case VK_NUMPAD2:
-        {
-            OutputDebugStringA("2 pressed \n");
-            break;
-        }
         case key_a:
         {
             OutputDebugStringA("a Down \n");
@@ -157,6 +144,22 @@ void AIManager::keyDown(WPARAM param)
         }
 		case key_s:
 		{
+            if (m_pCar->GetSeekState())
+            {
+                m_pCar->ToggleSeek(false);
+            }
+            else
+            {
+                if (m_pCar->GetArriveState())
+                {
+                    OutputDebugStringA("Cannot Seek While Arriving \n");
+                }
+                else
+                {
+                    m_pCar->ToggleSeek(true);
+                    OutputDebugStringA("Seek Turned On \n");
+                }
+            }
 			break;
 		}
         case key_t:

@@ -351,6 +351,14 @@ inline POINT VectorToPOINT(const Vector2D& v)
     return p;
 }
 
+//Clamp Vector
+inline Vector2D ClampVector(Vector2D targetVector, float maxMagnitude)
+{
+    targetVector.Normalize();
+
+    return targetVector * maxMagnitude;
+}
+
 
 
 //------------------------------------------------------------------------operator overloads

@@ -368,7 +368,9 @@
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="OuputStrings.cpp" />
     <ClCompile Include="PickupItem.cpp" />
+    <ClCompile Include="SteeringBehaviours.cpp" />
     <ClCompile Include="Vehicle.cpp" />
     <ClCompile Include="Waypoint.cpp" />
     <ClCompile Include="WaypointManager.cpp" />
@@ -384,8 +386,10 @@
     <ClInclude Include="main.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="OuputStrings.h" />
     <ClInclude Include="PickupItem.h" />
     <CLInclude Include="resource.h" />
+    <ClInclude Include="SteeringBehaviours.h" />
     <ClInclude Include="structures.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Vehicle.h" />
