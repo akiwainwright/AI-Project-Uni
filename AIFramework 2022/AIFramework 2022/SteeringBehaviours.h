@@ -18,6 +18,7 @@ public:
 
 	//Public functions
 	void SteeringUpdate();
+	void ResetSteerForce();
 
 private:
 

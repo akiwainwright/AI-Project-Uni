@@ -2,7 +2,7 @@
 #include "Vehicle.h"
 #include "OuputStrings.h"
 
-#define MAX_FORCE 100.0f
+#define MAX_FORCE 5.0f
 #define MAX_VELOCITY 5.0f
 
 
@@ -20,7 +20,6 @@ SteeringBehaviours::~SteeringBehaviours()
 void SteeringBehaviours::SteeringUpdate()
 {
 	m_CurrentForceDirection = m_car->getPosition() + m_car->GetVelocity();
-	m_CurrentForceDirection.Normalize();
 	
 	if (m_car->GetSeekState())
 	{
@@ -33,6 +32,11 @@ void SteeringBehaviours::SteeringUpdate()
 	}
 	
 	m_car->CalculateAcceleration(m_SteerForce);	
+}
+
+void SteeringBehaviours::ResetSteerForce()
+{
+	m_SteerForce = Vector2D(0.0f, 0.0f);
 }
 
 Vector2D SteeringBehaviours::Seek()

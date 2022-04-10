@@ -1,10 +1,11 @@
 #include "Vehicle.h"
 #include "OuputStrings.h"
+#include "constants.h"
 #include <sstream>
 #include <string>
 
 #define NORMAL_MAX_SPEED 200
-#define MAX_SPEED 5.0f
+#define MAX_SPEED 3.0f
 
 HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 {
@@ -28,7 +29,7 @@ HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 	m_lastPosition = Vector2D(0, 0);
 
 	m_Steering = new SteeringBehaviours(this);
-	m_Mass = 100.0f;
+	m_Mass = 1.0f;
 	
 
 	return hr;
@@ -36,6 +37,8 @@ HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 
 void Vehicle::update(const float deltaTime)
 {
+#pragma region Steering Behaviour Based Movement
+	OuputStrings::OutputVector(m_targetPosition);
 	if (m_SeekOn || m_ArriveOn || m_FleeOn || m_PursuitOn || m_ObjectAvoidance || m_WanderingOn)
 	{
 		m_Steering->SteeringUpdate();
@@ -44,13 +47,38 @@ void Vehicle::update(const float deltaTime)
 
 		if(m_Velocity.Length() > MAX_SPEED)
 		{
-			m_Velocity.Normalize();
-			m_Velocity *= MAX_SPEED;
+			m_ClampedVelocity = ClampVector(m_Velocity, MAX_SPEED);
+			m_currentPosition += m_ClampedVelocity;
 		}
-		OuputStrings::OutputVector(m_Velocity);
+		else
+		{
+			m_ClampedVelocity = m_Velocity;
+			m_currentPosition += m_ClampedVelocity;	
+		}
 
-		m_currentPosition += m_Velocity;
+#pragma region Keeping Car On Screen
+		if (m_currentPosition.x > SCREEN_WIDTH / 2)
+		{
+			m_currentPosition.x -= SCREEN_WIDTH;
+		}
+		else if(m_currentPosition.x < -SCREEN_WIDTH / 2)
+		{
+			m_currentPosition.x += SCREEN_WIDTH;
+		}
+
+		if (m_currentPosition.y > SCREEN_HEIGHT / 2)
+		{
+			m_currentPosition.y -= SCREEN_HEIGHT;
+		}
+		else if (m_currentPosition.y < -SCREEN_HEIGHT / 2)
+		{
+			m_currentPosition.y += SCREEN_HEIGHT;
+		}
+#pragma  endregion 
+		
+		m_Steering->ResetSteerForce();
 	}
+
 	
 
 	// rotate the object based on its last & current position
