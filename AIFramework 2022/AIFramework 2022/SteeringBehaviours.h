@@ -27,7 +27,7 @@ private:
 	Vector2D Seek();
 	Vector2D Arrive();
 
-	Vector2D StopMoving();
+	void StopMoving();
 	
 
 };

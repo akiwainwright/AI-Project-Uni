@@ -76,7 +76,7 @@ Vector2D SteeringBehaviours::Arrive()
 	return m_SteerForce;
 }
 
-Vector2D SteeringBehaviours::StopMoving()
+void SteeringBehaviours::StopMoving()
 {
 	m_car->SetVelocity(Vector2D(0.0f, 0.0f));
 	m_car->CalculateAcceleration(Vector2D(0.0f,0.0f));
