@@ -8,7 +8,7 @@
 SteeringBehaviours::SteeringBehaviours(Vehicle* car)
 {
 	m_car = car;
-	m_ArriveRadius = 150.0f;
+	m_ArriveRadius = 200.0f;
 }
 
 SteeringBehaviours::~SteeringBehaviours()
@@ -19,6 +19,8 @@ SteeringBehaviours::~SteeringBehaviours()
 
 void SteeringBehaviours::SteeringUpdate()
 {	
+	m_SteerForce = Vector2D(0.0f, 0.0f);
+
 	if (m_car->GetSeekState())
 	{
 		Seek();
@@ -42,6 +44,8 @@ Vector2D SteeringBehaviours::Seek()
 	desiredForce *= MAX_VELOCITY;
 	
 	Vector2D SeekForce = desiredForce - m_car->GetVelocity();
+	SeekForce.Normalize();
+	SeekForce *= MAX_VELOCITY;
 	
 	m_SteerForce += SeekForce;
 
@@ -55,29 +59,49 @@ Vector2D SteeringBehaviours::Arrive()
 
 	float distanceToTargetPostiion = (m_car->GetTargetPosition() - m_car->getPosition()).Length();
 
+	Vector2D ArriveForce;
+
 	if(distanceToTargetPostiion > m_ArriveRadius)
 	{
-		desiredForce = desiredForce * MAX_VELOCITY;
+		desiredForce *= MAX_VELOCITY;
+
+		ArriveForce = desiredForce - m_car->GetVelocity();
+		ArriveForce.Normalize();
+		ArriveForce *= MAX_VELOCITY;
 	}
-	else if(distanceToTargetPostiion < m_ArriveRadius && distanceToTargetPostiion > 5.0f)
+	else if(distanceToTargetPostiion < m_ArriveRadius && distanceToTargetPostiion > 1.0f)
 	{
-		OutputDebugStringA("Slowing Down\n");
-		desiredForce = desiredForce * MAX_VELOCITY * (distanceToTargetPostiion/m_ArriveRadius);
+		float speedDamp = MAX_VELOCITY * distanceToTargetPostiion / m_ArriveRadius;
+		desiredForce = desiredForce * speedDamp;
+
+		ArriveForce = desiredForce - m_car->GetVelocity();
+		ArriveForce.Normalize();
+		ArriveForce *= speedDamp;
 	}
 	else
 	{
 		StopMoving();
 	}
 
-	Vector2D ArriveForce = desiredForce - m_car->GetVelocity();
+
 
 	m_SteerForce += ArriveForce;
 	
 	return m_SteerForce;
 }
 
+Vector2D SteeringBehaviours::Flee()
+{
+	return Vector2D();
+}
+
+Vector2D SteeringBehaviours::Pursuit()
+{
+	return Vector2D();
+}
+
 void SteeringBehaviours::StopMoving()
 {
 	m_car->SetVelocity(Vector2D(0.0f, 0.0f));
-	m_car->CalculateAcceleration(Vector2D(0.0f,0.0f));
+	m_car->ResetAcceleration();
 }

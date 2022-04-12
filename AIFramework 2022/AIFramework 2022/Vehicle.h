@@ -29,6 +29,7 @@ public:
 	//Physics related functions
 	inline void CalculateAcceleration(Vector2D force) { m_Acceleration = force / m_Mass; }
 	inline Vector2D GetAcceleration() { return m_Acceleration; }
+	inline void ResetAcceleration() { m_Acceleration = Vector2D(0.0f, 0.0f); }
 	inline Vector2D GetVelocity() { return m_Velocity; }
 	inline void SetVelocity(Vector2D velocity) { m_Velocity = velocity;} 
 
@@ -82,6 +83,9 @@ protected: // preotected properties
 
 	//Steering Variables
 	SteeringBehaviours* m_Steering;
+
+	Vehicle* FleeTarget;
+	Vehicle* PursuitTarget;
 
 	bool m_SeekOn = false;
 	bool m_ArriveOn = false;

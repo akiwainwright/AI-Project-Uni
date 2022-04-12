@@ -42,7 +42,7 @@ void Vehicle::update(const float deltaTime)
 	{
 		m_Steering->SteeringUpdate();
 
-		m_Velocity = m_Velocity + m_Acceleration * deltaTime;
+		m_Velocity = m_Velocity + (2 * m_Acceleration * deltaTime);
 		m_Velocity.Truncate(MAX_SPEED);
 
 		m_currentPosition += m_Velocity;

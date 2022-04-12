@@ -26,6 +26,8 @@ private:
 	//Private Functions
 	Vector2D Seek();
 	Vector2D Arrive();
+	Vector2D Flee();
+	Vector2D Pursuit();
 
 	void StopMoving();
 	
