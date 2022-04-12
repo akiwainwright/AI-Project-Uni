@@ -13,6 +13,8 @@ private:
 	float m_FleeRadius;
 	float m_WanderCircleDistance;
 	float m_WanderCircleRadius;
+	float m_AvoidSensorLength;
+	float m_AvoidRadius;
 
 	int m_WanderAngleRange;
 
@@ -34,6 +36,7 @@ private:
 	Vector2D Flee();
 	Vector2D Pursuit();
 	Vector2D Wander();
+	Vector2D ObjectAvoidance();
 
 	void StopMoving();
 

@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "Vehicle.h"
 #include "OuputStrings.h"
+#include "CollisionHelper.h"
 #include <cstdlib>
 #include <ctime>
 
@@ -12,11 +13,17 @@ SteeringBehaviours::SteeringBehaviours(Vehicle* car)
 	srand(time(NULL));
 
 	m_car = car;
+
 	m_ArriveRadius = 200.0f;
+
 	m_FleeRadius = 250.0f;
+
 	m_WanderAngleRange = 80;
 	m_WanderCircleDistance = 40.0f;
 	m_WanderCircleRadius = 10.0f;
+
+	m_AvoidSensorLength = 50.0f;
+	m_AvoidRadius = 150.0f;
 }
 
 SteeringBehaviours::~SteeringBehaviours()
@@ -52,6 +59,11 @@ void SteeringBehaviours::SteeringUpdate()
 	if (m_car->GetWanderState())
 	{
 		Wander();
+	}
+
+	if (m_car->GetObjectAvoidanceState())
+	{
+		ObjectAvoidance();
 	}
 	
 	m_SteerForce.Truncate(MAX_FORCE);
@@ -191,6 +203,51 @@ Vector2D SteeringBehaviours::Wander()
 
 		m_SteerForce += WanderForce;
 	}
+
+	return m_SteerForce;
+}
+
+Vector2D SteeringBehaviours::ObjectAvoidance()
+{
+	
+	Vector2D AvoidSensor = m_car->GetVelocity();
+	AvoidSensor.Normalize();
+	AvoidSensor *= m_AvoidSensorLength;
+
+	Vector2D avoidPoint1 = m_car->getPosition() + AvoidSensor;
+	Vector2D avoidPoint2 = m_car->getPosition() + (AvoidSensor / 2);
+
+	Vector2D avoidTargetPosition = m_car->GetAvoidTarget()->getPosition();
+
+	Vector2D AvoidForce;
+
+	if (avoidTargetPosition.Distance(avoidPoint1) < m_AvoidRadius && avoidTargetPosition.Distance(avoidPoint2) < m_AvoidRadius)
+	{
+		//Choosing to avoid closer target
+		AvoidForce = AvoidSensor * -1;
+		AvoidForce.Normalize();
+		AvoidForce *= MAX_AVOID_FORCE;
+
+		m_SteerForce += AvoidForce;
+	}
+	else if (avoidTargetPosition.Distance(avoidPoint1) < m_AvoidRadius)
+	{
+		OutputDebugStringA("Avoiding\n");
+		AvoidForce = AvoidSensor * -1;
+		AvoidForce.Normalize();
+		AvoidForce *= MAX_AVOID_FORCE;
+
+		m_SteerForce += AvoidForce;
+	}
+	else if (avoidTargetPosition.Distance(avoidPoint2) < m_AvoidRadius)
+	{
+		AvoidForce = AvoidSensor * -1;
+		AvoidForce.Normalize();
+		AvoidForce *= MAX_AVOID_FORCE;
+
+		m_SteerForce += AvoidForce;
+	}
+	
 
 	return m_SteerForce;
 }

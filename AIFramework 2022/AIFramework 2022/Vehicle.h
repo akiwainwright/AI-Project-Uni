@@ -5,6 +5,7 @@
 #include "Vector2D.h"
 #include "Collidable.h"
 #include "SteeringBehaviours.h"
+#include "CollisionHelper.h"
 
 
 enum class carColour
@@ -18,6 +19,7 @@ class Vehicle : public DrawableGameObject, public Collidable
 public:
 	virtual HRESULT initMesh(ID3D11Device* pd3dDevice, carColour colour);
 	virtual void update(const float deltaTime);
+	~Vehicle();
 
 	void setMaxSpeed(const float maxSpeed) { m_maxSpeed = maxSpeed; }
 	void setCurrentSpeed(const float speed); // a ratio: a value between 0 and 1 (1 being max speed)
@@ -61,6 +63,9 @@ public:
 	inline Vehicle* GetPursuitTarget() { return m_PursuitTarget; }
 	inline void SetPursuitTarget(Vehicle* pursuitTarget) { m_PursuitTarget = pursuitTarget; }
 
+	inline Vehicle* GetAvoidTarget() { return m_AvoidTarget; }
+	inline void SetAvoidTarget(Vehicle* avoidTarget) { m_AvoidTarget = avoidTarget; }
+
 	#pragma endregion
 
 	inline void SetTargetPosition(Vector2D targetPos) { m_targetPosition = targetPos; }
@@ -92,6 +97,7 @@ protected: // preotected properties
 
 	Vehicle* m_FleeTarget;
 	Vehicle* m_PursuitTarget;
+	Vehicle* m_AvoidTarget;
 
 	bool m_SeekOn = false;
 	bool m_ArriveOn = false;

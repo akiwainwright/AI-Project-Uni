@@ -50,6 +50,10 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     hr = m_pCar2->initMesh(pd3dDevice, carColour::redCar);
     m_pCar2->setVehiclePosition(Vector2D(400, -250));
 
+    m_pCar3 = new Vehicle();
+    hr = m_pCar3->initMesh(pd3dDevice, carColour::redCar);
+    m_pCar3->setVehiclePosition(Vector2D(0.0f, 0.0f));
+
     // setup the waypoints
     m_waypointManager.createWaypoints(pd3dDevice);
     m_pCar->setWaypointManager(&m_waypointManager);
@@ -65,6 +69,7 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     setRandomPickupPosition(pPickupPassenger);
 
     m_pCar->SetPursuitTarget(m_pCar2);
+    m_pCar->SetAvoidTarget(m_pCar3);
 
     m_pCar2->SetFleeTarget(m_pCar);
     m_pCar2->ToggleFlee(true);
@@ -121,6 +126,13 @@ void AIManager::update(const float fDeltaTime)
         checkForCollisions();
         AddItemToDrawList(m_pCar2);
     }
+
+    if (m_pCar3 != nullptr)
+    {
+        m_pCar3->update(fDeltaTime);
+        checkForCollisions();
+        AddItemToDrawList(m_pCar3);
+    }
 }
 
 void AIManager::mouseUp(int x, int y)
@@ -153,6 +165,7 @@ void AIManager::keyDown(WPARAM param)
 	const WPARAM key_a = 0x41;
 	const WPARAM key_s = 0x53;
 	const WPARAM key_p = 0x50;
+	const WPARAM key_o = 0x4F;
     const WPARAM key_t = 84;
 
     switch (param)
@@ -162,7 +175,7 @@ void AIManager::keyDown(WPARAM param)
             if (m_pCar->GetArriveState())
             {
                 m_pCar->ToggleArrive(false);
-                OutputDebugStringA("Arrive Turned Off");
+                OutputDebugStringA("Arrive Turned Off\n");
             }
             else
             {
@@ -183,7 +196,7 @@ void AIManager::keyDown(WPARAM param)
             if (m_pCar->GetSeekState())
             {
                 m_pCar->ToggleSeek(false);
-                OutputDebugStringA("Seeking Turned Off");
+                OutputDebugStringA("Seeking Turned Off\n");
             }
             else
             {
@@ -212,8 +225,23 @@ void AIManager::keyDown(WPARAM param)
             }
             break;
         }
+        case key_o:
+        {
+            if (m_pCar->GetObjectAvoidanceState())
+            {
+                m_pCar->ToggleObjectAvoidance(false);
+                OutputDebugStringA("Object Avoidance Turned Off\n");
+            }
+            else
+            {
+                m_pCar->ToggleObjectAvoidance(true);
+                OutputDebugStringA("Object Avoidance Turned On\n");
+            }
+            break;
+        }
         case key_t:
 		{
+            OutputDebugStringA("Target Position is: ");
             OuputStrings::OutputVector(m_pCar->GetTargetPosition());
             break;
         }
