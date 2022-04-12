@@ -11,6 +11,10 @@ private:
 
 	float m_ArriveRadius;
 	float m_FleeRadius;
+	float m_WanderCircleDistance;
+	float m_WanderCircleRadius;
+
+	int m_WanderAngleRange;
 
 	class Vehicle* m_car;
 
@@ -29,8 +33,13 @@ private:
 	Vector2D Arrive();
 	Vector2D Flee();
 	Vector2D Pursuit();
+	Vector2D Wander();
 
 	void StopMoving();
+
+	Vector2D rotateVector(Vector2D currentVector, float angle);
+
+	inline float degToRad(float angleDeg) { return angleDeg * 3.141 / 180; }
 	
 
 };

@@ -3,13 +3,20 @@
 #include "constants.h"
 #include "Vehicle.h"
 #include "OuputStrings.h"
+#include <cstdlib>
+#include <ctime>
 
 
 SteeringBehaviours::SteeringBehaviours(Vehicle* car)
 {
+	srand(time(NULL));
+
 	m_car = car;
 	m_ArriveRadius = 200.0f;
 	m_FleeRadius = 250.0f;
+	m_WanderAngleRange = 80;
+	m_WanderCircleDistance = 40.0f;
+	m_WanderCircleRadius = 10.0f;
 }
 
 SteeringBehaviours::~SteeringBehaviours()
@@ -40,6 +47,11 @@ void SteeringBehaviours::SteeringUpdate()
 	if (m_car->GetPursuitState())
 	{
 		Pursuit();
+	}
+
+	if (m_car->GetWanderState())
+	{
+		Wander();
 	}
 	
 	m_SteerForce.Truncate(MAX_FORCE);
@@ -138,8 +150,64 @@ Vector2D SteeringBehaviours::Pursuit()
 	return m_SteerForce;
 }
 
+Vector2D SteeringBehaviours::Wander()
+{
+	Vector2D currentForce;
+
+	//Check if car is stationary
+	if (m_car->GetVelocity().Length() == 0.0f)
+	{
+		currentForce = Vector2D((rand() % 2) / 10.0f, (rand() % 2) / 10.0f);
+	}
+	else
+	{
+		currentForce = m_car->GetVelocity();
+	}
+
+	Vector2D currentDirection = currentForce;
+	currentDirection.Normalize();
+
+	Vector2D wanderCircleCenter = m_car->getPosition() + (currentDirection * m_WanderCircleDistance);
+	Vector2D vecToCircleCenter = wanderCircleCenter - m_car->getPosition();
+	Vector2D wanderOffset = vecToCircleCenter;
+	wanderOffset.Normalize();
+
+	float angleOffset = rand() % ((m_WanderAngleRange * 2) + 1);
+	angleOffset -= m_WanderAngleRange;
+
+	//if (angleOffset < -60.0f || angleOffset > 60.0f)
+	{
+
+		wanderOffset = rotateVector(wanderOffset, angleOffset);
+		wanderOffset *= m_WanderCircleRadius;
+
+		Vector2D desiredForce = (wanderCircleCenter + wanderOffset) - m_car->getPosition();
+		desiredForce.Normalize();
+		desiredForce *= MAX_VELOCITY;
+
+		Vector2D WanderForce = desiredForce - currentForce;
+		WanderForce.Normalize();
+		WanderForce *= MAX_VELOCITY * 10;
+
+		m_SteerForce += WanderForce;
+	}
+
+	return m_SteerForce;
+}
+
 void SteeringBehaviours::StopMoving()
 {
 	m_car->SetVelocity(Vector2D(0.0f, 0.0f));
 	m_car->ResetAcceleration();
+}
+
+Vector2D SteeringBehaviours::rotateVector(Vector2D currentVector, float angle)
+{
+	Vector2D rotatedVector;
+	angle = degToRad(angle);
+
+	rotatedVector.x = currentVector.x * cos(angle) - currentVector.y * sin(angle);
+	rotatedVector.y = currentVector.x * sin(angle) + currentVector.y * cos(angle);
+
+	return rotatedVector;
 }

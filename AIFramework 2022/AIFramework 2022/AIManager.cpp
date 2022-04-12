@@ -68,6 +68,7 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
 
     m_pCar2->SetFleeTarget(m_pCar);
     m_pCar2->ToggleFlee(true);
+    m_pCar2->ToggleWander(true);
 
     return hr;
 }
