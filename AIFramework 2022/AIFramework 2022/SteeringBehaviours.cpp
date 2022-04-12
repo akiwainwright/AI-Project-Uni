@@ -9,6 +9,7 @@ SteeringBehaviours::SteeringBehaviours(Vehicle* car)
 {
 	m_car = car;
 	m_ArriveRadius = 200.0f;
+	m_FleeRadius = 250.0f;
 }
 
 SteeringBehaviours::~SteeringBehaviours()
@@ -29,6 +30,16 @@ void SteeringBehaviours::SteeringUpdate()
 	if(m_car->GetArriveState())
 	{
 		Arrive();
+	}
+
+	if (m_car->GetFleeState())
+	{
+		Flee();
+	}
+
+	if (m_car->GetPursuitState())
+	{
+		Pursuit();
 	}
 	
 	m_SteerForce.Truncate(MAX_FORCE);
@@ -92,12 +103,39 @@ Vector2D SteeringBehaviours::Arrive()
 
 Vector2D SteeringBehaviours::Flee()
 {
-	return Vector2D();
+	Vector2D FleeForce;
+
+	if (m_car->getPosition().Distance(m_car->GetFleeTarget()->getPosition()) <= m_FleeRadius)
+	{
+		Vector2D desiredForce = (m_car->GetFleeTarget()->getPosition() - m_car->getPosition());
+		desiredForce.Normalize();
+		desiredForce *= -MAX_VELOCITY;
+
+		FleeForce = desiredForce - m_car->GetVelocity();
+		FleeForce.Normalize();
+		FleeForce *= MAX_VELOCITY * 3;
+	}
+
+	m_SteerForce += FleeForce;
+
+	return m_SteerForce;
 }
 
 Vector2D SteeringBehaviours::Pursuit()
 {
-	return Vector2D();
+	Vector2D targetPredictedForce = m_car->GetPursuitTarget()->getPosition() + m_car->GetPursuitTarget()->GetVelocity();
+	
+	Vector2D desiredForce = targetPredictedForce - m_car->getPosition();
+	desiredForce.Normalize();
+	desiredForce *= MAX_VELOCITY;
+
+	Vector2D PursuitForce = desiredForce - m_car->GetVelocity();
+	PursuitForce.Normalize();
+	PursuitForce *= MAX_VELOCITY;
+
+	m_SteerForce += PursuitForce;
+
+	return m_SteerForce;
 }
 
 void SteeringBehaviours::StopMoving()

@@ -46,6 +46,10 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     if (FAILED(hr))
         return hr;
 
+    m_pCar2 = new Vehicle();
+    hr = m_pCar2->initMesh(pd3dDevice, carColour::redCar);
+    m_pCar2->setVehiclePosition(Vector2D(400, -250));
+
     // setup the waypoints
     m_waypointManager.createWaypoints(pd3dDevice);
     m_pCar->setWaypointManager(&m_waypointManager);
@@ -59,6 +63,11 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
 
     // (needs to be done after waypoint setup)
     setRandomPickupPosition(pPickupPassenger);
+
+    m_pCar->SetPursuitTarget(m_pCar2);
+
+    m_pCar2->SetFleeTarget(m_pCar);
+    m_pCar2->ToggleFlee(true);
 
     return hr;
 }
@@ -104,6 +113,13 @@ void AIManager::update(const float fDeltaTime)
 		checkForCollisions();
 		AddItemToDrawList(m_pCar);
 	}
+
+    if (m_pCar2 != nullptr)
+    {
+        m_pCar2->update(fDeltaTime);
+        checkForCollisions();
+        AddItemToDrawList(m_pCar2);
+    }
 }
 
 void AIManager::mouseUp(int x, int y)
@@ -135,6 +151,7 @@ void AIManager::keyDown(WPARAM param)
 	// hint 65-90 are a-z
 	const WPARAM key_a = 0x41;
 	const WPARAM key_s = 0x53;
+	const WPARAM key_p = 0x50;
     const WPARAM key_t = 84;
 
     switch (param)
@@ -181,6 +198,19 @@ void AIManager::keyDown(WPARAM param)
             }
 			break;
 		}
+        case key_p:
+        {
+            if (m_pCar->GetPursuitState())
+            {
+                m_pCar->TogglePursuit(false);
+            }
+            else
+            {
+                m_pCar->TogglePursuit(true);
+                OutputDebugStringA("Pursuit Turned On \n");
+            }
+            break;
+        }
         case key_t:
 		{
             OuputStrings::OutputVector(m_pCar->GetTargetPosition());

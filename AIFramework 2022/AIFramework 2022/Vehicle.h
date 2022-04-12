@@ -55,6 +55,12 @@ public:
 	inline void ToggleWander(bool state) { m_WanderingOn = state; }
 	inline bool GetWanderState() { return m_WanderingOn; }
 
+	inline Vehicle* GetFleeTarget() { return m_FleeTarget; }
+	inline void SetFleeTarget(Vehicle* fleeTarget) { m_FleeTarget = fleeTarget; }
+
+	inline Vehicle* GetPursuitTarget() { return m_PursuitTarget; }
+	inline void SetPursuitTarget(Vehicle* pursuitTarget) { m_PursuitTarget = pursuitTarget; }
+
 	#pragma endregion
 
 	inline void SetTargetPosition(Vector2D targetPos) { m_targetPosition = targetPos; }
@@ -84,8 +90,8 @@ protected: // preotected properties
 	//Steering Variables
 	SteeringBehaviours* m_Steering;
 
-	Vehicle* FleeTarget;
-	Vehicle* PursuitTarget;
+	Vehicle* m_FleeTarget;
+	Vehicle* m_PursuitTarget;
 
 	bool m_SeekOn = false;
 	bool m_ArriveOn = false;

@@ -7,9 +7,10 @@ private:
 
 	//Private Variables
 	Vector2D m_CurrentForce;
-	Vector2D m_SteerForce;
+	Vector2D m_SteerForce = Vector2D(0.0f, 0.0f);
 
 	float m_ArriveRadius;
+	float m_FleeRadius;
 
 	class Vehicle* m_car;
 

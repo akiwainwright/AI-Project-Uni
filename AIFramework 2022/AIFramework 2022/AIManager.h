@@ -27,6 +27,7 @@ protected:
 private:
 	vecPickups              m_pickups;
 	Vehicle*				m_pCar = nullptr;
+	Vehicle*				m_pCar2 = nullptr;
 	WaypointManager			m_waypointManager;
 
 };
