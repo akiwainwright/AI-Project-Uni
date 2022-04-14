@@ -21,6 +21,8 @@
     <ClCompile Include="Collidable.cpp" />
     <ClCompile Include="CollisionHelper.cpp" />
     <ClCompile Include="SteeringBehaviours.cpp" />
+    <ClCompile Include="OuputStrings.cpp" />
+    <ClCompile Include="Pathfinding.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIManager.h" />
@@ -55,6 +57,8 @@
     </ClInclude>
     <ClInclude Include="CollisionHelper.h" />
     <ClInclude Include="SteeringBehaviours.h" />
+    <ClInclude Include="OuputStrings.h" />
+    <ClInclude Include="Pathfinding.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\blue.dds">

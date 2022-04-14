@@ -369,6 +369,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="OuputStrings.cpp" />
+    <ClCompile Include="Pathfinding.cpp" />
     <ClCompile Include="PickupItem.cpp" />
     <ClCompile Include="SteeringBehaviours.cpp" />
     <ClCompile Include="Vehicle.cpp" />
@@ -387,6 +388,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="OuputStrings.h" />
+    <ClInclude Include="Pathfinding.h" />
     <ClInclude Include="PickupItem.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="SteeringBehaviours.h" />
