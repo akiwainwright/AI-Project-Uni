@@ -37,8 +37,8 @@ HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 
 void Vehicle::update(const float deltaTime)
 {
-#pragma region Steering Behaviour Based Movement
-	if (m_SeekOn || m_ArriveOn || m_FleeOn || m_PursuitOn || m_ObjectAvoidance || m_WanderingOn)
+//#pragma region Steering Behaviour Based Movement
+	/*if (m_SeekOn || m_ArriveOn || m_FleeOn || m_PursuitOn || m_ObjectAvoidance || m_WanderingOn)
 	{
 		m_Steering->SteeringUpdate();
 
@@ -66,9 +66,46 @@ void Vehicle::update(const float deltaTime)
 			m_currentPosition.y += SCREEN_HEIGHT;
 		}
 #pragma  endregion 
-		
-	}
+		*/
+	//}
 
+	switch (m_VehicleMode)
+	{
+		case Mode::Steering:
+		{
+			m_Steering->SteeringUpdate();
+
+			m_Velocity = m_Velocity + (2 * m_Acceleration * deltaTime);
+			m_Velocity.Truncate(MAX_SPEED);
+
+			m_currentPosition += m_Velocity;
+
+#pragma region Keeping Car On Screen
+			if (m_currentPosition.x > SCREEN_WIDTH / 2)
+			{
+				m_currentPosition.x -= SCREEN_WIDTH;
+			}
+			else if (m_currentPosition.x < -SCREEN_WIDTH / 2)
+			{
+				m_currentPosition.x += SCREEN_WIDTH;
+			}
+
+			if (m_currentPosition.y > SCREEN_HEIGHT / 2)
+			{
+				m_currentPosition.y -= SCREEN_HEIGHT;
+			}
+			else if (m_currentPosition.y < -SCREEN_HEIGHT / 2)
+			{
+				m_currentPosition.y += SCREEN_HEIGHT;
+			}
+#pragma  endregion 
+			break;
+		}
+		case Mode::Pathfinding:
+		{
+			break;
+		}
+	}
 	
 
 	// rotate the object based on its last & current position
@@ -129,6 +166,66 @@ void Vehicle::setVehiclePosition(Vector2D position)
 void Vehicle::setWaypointManager(WaypointManager* wpm)
 {
 	m_waypointManager = wpm;
+}
+
+void Vehicle::ResetSteeringBehaviours()
+{
+	m_SeekOn = false;
+	m_ArriveOn = false;
+	m_FleeOn = false;
+	m_PursuitOn = false;
+	m_WanderingOn = false;
+	m_ObjectAvoidanceOn = false;
+}
+
+void Vehicle::OutputCurrentModes()
+{
+	string OutputMessage = "Active Behaviours: ";
+
+	if (!m_SeekOn && !m_ArriveOn && !m_FleeOn && !m_PursuitOn && !m_WanderingOn && !m_ObjectAvoidanceOn)
+	{
+		OutputDebugStringA("No Active Steering Behaviours\n");
+		return;
+	}
+
+	if (m_SeekOn)
+	{
+		string Mode = "Seek ";
+		OutputMessage += Mode;
+	}
+
+	if (m_ArriveOn)
+	{
+		string Mode = "Arrive ";
+		OutputMessage += Mode;
+	}
+
+	if (m_FleeOn)
+	{
+		string Mode = "Flee ";
+		OutputMessage += Mode;
+	}
+
+	if (m_PursuitOn)
+	{
+		string Mode = "Pursuit ";
+		OutputMessage += Mode;
+	}
+
+	if (m_WanderingOn)
+	{
+		string Mode = "Wander ";
+		OutputMessage += Mode;
+	}
+
+	if (m_ObjectAvoidanceOn)
+	{
+		string Mode = "ObjectAvoidance ";
+		OutputMessage += Mode;
+	}
+
+	OutputMessage += "\n";
+	OutputDebugStringA(OutputMessage.c_str());
 }
 
 

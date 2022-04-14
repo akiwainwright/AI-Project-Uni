@@ -54,6 +54,10 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     hr = m_pCar3->initMesh(pd3dDevice, carColour::redCar);
     m_pCar3->setVehiclePosition(Vector2D(0.0f, 0.0f));
 
+    m_pCar4 = new Vehicle();
+    hr = m_pCar4->initMesh(pd3dDevice, carColour::redCar);
+    m_pCar4->setVehiclePosition(Vector2D(450.0f, 300.0f));
+
     // setup the waypoints
     m_waypointManager.createWaypoints(pd3dDevice);
     m_pCar->setWaypointManager(&m_waypointManager);
@@ -68,12 +72,18 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     // (needs to be done after waypoint setup)
     setRandomPickupPosition(pPickupPassenger);
 
+    m_pCar->SetVehicleMode(Mode::Pathfinding);
+
     m_pCar->SetPursuitTarget(m_pCar2);
     m_pCar->SetAvoidTarget(m_pCar3);
+    m_pCar->SetFleeTarget(m_pCar4);
 
     m_pCar2->SetFleeTarget(m_pCar);
     m_pCar2->ToggleFlee(true);
     m_pCar2->ToggleWander(true);
+
+    m_pCar4->SetPursuitTarget(m_pCar);
+    m_pCar4->TogglePursuit(true);
 
     return hr;
 }
@@ -120,18 +130,31 @@ void AIManager::update(const float fDeltaTime)
 		AddItemToDrawList(m_pCar);
 	}
 
-    if (m_pCar2 != nullptr)
+    if (m_pCar->GetVehicleMode() == Mode::Steering)
     {
-        m_pCar2->update(fDeltaTime);
-        checkForCollisions();
-        AddItemToDrawList(m_pCar2);
-    }
+        if (m_pCar2 != nullptr)
+        {
+            m_pCar2->update(fDeltaTime);
+            checkForCollisions();
+            AddItemToDrawList(m_pCar2);
+        }
 
-    if (m_pCar3 != nullptr)
-    {
-        m_pCar3->update(fDeltaTime);
-        checkForCollisions();
-        AddItemToDrawList(m_pCar3);
+        if (m_pCar3 != nullptr)
+        {
+            m_pCar3->update(fDeltaTime);
+            checkForCollisions();
+            AddItemToDrawList(m_pCar3);
+        }
+
+        if (m_pCar->GetFleeState())
+        {
+            if (m_pCar4 != nullptr)
+            {
+                m_pCar4->update(fDeltaTime);
+                checkForCollisions();
+                AddItemToDrawList(m_pCar4);
+            }
+        }
     }
 }
 
@@ -153,7 +176,7 @@ void AIManager::keyUp(WPARAM param)
     {
         case key_a:
         {
-            OutputDebugStringA("a Up \n");
+            //OutputDebugStringA("a Up \n");
             break;
         }
     }
@@ -162,92 +185,163 @@ void AIManager::keyUp(WPARAM param)
 void AIManager::keyDown(WPARAM param)
 {
 	// hint 65-90 are a-z
-	const WPARAM key_a = 0x41;
-	const WPARAM key_s = 0x53;
-	const WPARAM key_p = 0x50;
-	const WPARAM key_o = 0x4F;
-    const WPARAM key_t = 84;
+	//const WPARAM key_a = 0x41;
+	//const WPARAM key_s = 0x53;
+	//const WPARAM key_p = 0x50;
+	//const WPARAM key_o = 0x4F;
+    //const WPARAM key_t = 84;
 
-    switch (param)
+    //Windows VM Keys
+    const WPARAM TAB_KEY = 0x09;
+    const WPARAM C_KEY = 0x43;
+    const WPARAM S_KEY = 0x53;
+    const WPARAM A_KEY = 0x41;
+    const WPARAM F_KEY = 0x46;
+    const WPARAM P_KEY = 0x50;
+    const WPARAM W_KEY = 0x57;
+    const WPARAM O_KEY = 0x4f;
+    const WPARAM T_KEY = 0x54;
+
+    switch (m_pCar->GetVehicleMode())
     {
-        case key_a:
+
+        case Mode::Steering:
+#pragma region Steering Mode Keyboard input
         {
-            if (m_pCar->GetArriveState())
+            switch(param)
             {
-                m_pCar->ToggleArrive(false);
-                OutputDebugStringA("Arrive Turned Off\n");
-            }
-            else
-            {
-                if (m_pCar->GetSeekState())
+                case TAB_KEY:
                 {
-                    OutputDebugStringA("Cannot Arrive While Seeking \n");
+                    m_pCar->SetVehicleMode(Mode::Pathfinding);
+                    OutputDebugStringA("Switched to Pathfinding Mode\n");
+                    m_pCar->ResetSteeringBehaviours();
+                    break;
                 }
-                else
+                case C_KEY: //Input to display Current Active Steering Behaviours
                 {
-                    m_pCar->ToggleArrive(true);
-                    OutputDebugStringA("Arrive Turned On \n");
+                    m_pCar->OutputCurrentModes();
+                    break;
                 }
+                case S_KEY: //Input Key for toggling Seek Behaviour
+                {
+                    if (!m_pCar->GetSeekState())
+                    {
+                        m_pCar->ToggleSeek(true);
+                        m_pCar->ToggleArrive(false);
+                        m_pCar->ToggleWander(false);
+                        m_pCar->TogglePursuit(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    else
+                    {
+                        m_pCar->ToggleSeek(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    break;
+                }
+                case A_KEY: //Input Key for toggling Arrive Behaviour
+                {
+                    if (!m_pCar->GetArriveState())
+                    {
+                        m_pCar->ToggleSeek(false);
+                        m_pCar->ToggleArrive(true);
+                        m_pCar->ToggleWander(false);
+                        m_pCar->TogglePursuit(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    else
+                    {
+                        m_pCar->ToggleArrive(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    break;
+                }
+                case F_KEY: //Input key for toggling Flee Behaviour
+                {
+                    if (!m_pCar->GetFleeState())
+                    {
+                        m_pCar->ToggleFlee(true);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    else
+                    {
+                        m_pCar->ToggleFlee(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    break;
+                }
+                case P_KEY: //Input Key for Toggling Pursuit Behaviour
+                {
+                    if (!m_pCar->GetPursuitState())
+                    {
+                        m_pCar->TogglePursuit(true);
+                        m_pCar->ToggleSeek(false);
+                        m_pCar->ToggleArrive(false);
+                        m_pCar->ToggleWander(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    else
+                    {
+                        m_pCar->TogglePursuit(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    break;
+                }
+                case W_KEY: //Input key for Toggling Wander Behaviour
+                {
+                    if (!m_pCar->GetWanderState())
+                    {
+                        m_pCar->ToggleSeek(false);
+                        m_pCar->ToggleArrive(false);
+                        m_pCar->ToggleWander(true);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    else
+                    {
+                        m_pCar->ToggleWander(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    break;
+                }
+                case O_KEY: //Input key for Toggling Object Avoidance
+                {
+                    if (!m_pCar->GetObjectAvoidanceState())
+                    {
+                        m_pCar->ToggleObjectAvoidance(true);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    else
+                    {
+                        m_pCar->ToggleObjectAvoidance(false);
+                        m_pCar->OutputCurrentModes();
+                    }
+                    break;
+                }
+                case T_KEY: //Input key for displaying target position
+                {
+                    OutputDebugStringA("Target Position: ");
+                    OuputStrings::OutputVector(m_pCar->GetTargetPosition());
+                    break;
+                }
+
             }
             break;
         }
-		case key_s:
-		{
-            if (m_pCar->GetSeekState())
-            {
-                m_pCar->ToggleSeek(false);
-                OutputDebugStringA("Seeking Turned Off\n");
-            }
-            else
-            {
-                if (m_pCar->GetArriveState())
-                {
-                    OutputDebugStringA("Cannot Seek While Arriving \n");
-                }
-                else
-                {
-                    m_pCar->ToggleSeek(true);
-                    OutputDebugStringA("Seek Turned On \n");
-                }
-            }
-			break;
-		}
-        case key_p:
+#pragma endregion
+        case Mode::Pathfinding:
+#pragma region Pathfinding Mode Keyboarud Input
         {
-            if (m_pCar->GetPursuitState())
+            switch (param)
             {
-                m_pCar->TogglePursuit(false);
-            }
-            else
-            {
-                m_pCar->TogglePursuit(true);
-                OutputDebugStringA("Pursuit Turned On \n");
-            }
-            break;
-        }
-        case key_o:
-        {
-            if (m_pCar->GetObjectAvoidanceState())
-            {
-                m_pCar->ToggleObjectAvoidance(false);
-                OutputDebugStringA("Object Avoidance Turned Off\n");
-            }
-            else
-            {
-                m_pCar->ToggleObjectAvoidance(true);
-                OutputDebugStringA("Object Avoidance Turned On\n");
+                case TAB_KEY:
+                    m_pCar->SetVehicleMode(Mode::Steering);
+                    OutputDebugStringA("Switched to Steering Behaviours\n");
+                    m_pCar->OutputCurrentModes();
+                    break;
             }
             break;
         }
-        case key_t:
-		{
-            OutputDebugStringA("Target Position is: ");
-            OuputStrings::OutputVector(m_pCar->GetTargetPosition());
-            break;
-        }
-        // etc
-        default:
-            break;
+#pragma endregion
     }
 }
 

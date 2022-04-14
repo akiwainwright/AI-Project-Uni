@@ -22,8 +22,8 @@ SteeringBehaviours::SteeringBehaviours(Vehicle* car)
 	m_WanderCircleDistance = 40.0f;
 	m_WanderCircleRadius = 10.0f;
 
-	m_AvoidSensorLength = 50.0f;
-	m_AvoidRadius = 150.0f;
+	m_AvoidSensorLength = 25.0f;
+	m_AvoidRadius = 50.0f;
 }
 
 SteeringBehaviours::~SteeringBehaviours()
@@ -229,7 +229,6 @@ Vector2D SteeringBehaviours::ObjectAvoidance()
 	}
 	else if (avoidTargetPosition.Distance(avoidPoint1) < m_AvoidRadius)
 	{
-		OutputDebugStringA("Avoiding\n");
 		AvoidForce = AvoidSensor * -1;
 		AvoidForce.Normalize();
 		AvoidForce *= MAX_AVOID_FORCE;

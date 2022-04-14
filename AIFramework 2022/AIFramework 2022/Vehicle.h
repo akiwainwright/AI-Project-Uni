@@ -14,6 +14,12 @@ enum class carColour
 	blueCar,
 };
 
+enum class Mode
+{
+	Steering,
+	Pathfinding,
+};
+
 class Vehicle : public DrawableGameObject, public Collidable
 {
 public:
@@ -51,8 +57,8 @@ public:
 	inline void TogglePursuit(bool state) { m_PursuitOn = state; }
 	inline bool GetPursuitState() { return m_PursuitOn; }
 
-	inline void ToggleObjectAvoidance(bool state) { m_ObjectAvoidance = state; }
-	inline bool GetObjectAvoidanceState() { return m_ObjectAvoidance; }
+	inline void ToggleObjectAvoidance(bool state) { m_ObjectAvoidanceOn = state; }
+	inline bool GetObjectAvoidanceState() { return m_ObjectAvoidanceOn; }
 
 	inline void ToggleWander(bool state) { m_WanderingOn = state; }
 	inline bool GetWanderState() { return m_WanderingOn; }
@@ -68,8 +74,15 @@ public:
 
 	#pragma endregion
 
+	void ResetSteeringBehaviours();
+
 	inline void SetTargetPosition(Vector2D targetPos) { m_targetPosition = targetPos; }
 	inline Vector2D GetTargetPosition() { return m_targetPosition; }
+
+	inline void SetVehicleMode(Mode mode) { m_VehicleMode = mode; }
+	inline Mode GetVehicleMode() { return m_VehicleMode; }
+
+	void OutputCurrentModes();
 
 
 protected: // protected methods
@@ -85,6 +98,8 @@ protected: // preotected properties
 	Vector2D m_targetPosition;
 	Vector2D m_lastPosition;
 	WaypointManager* m_waypointManager;
+
+	Mode m_VehicleMode;
 
 	//Physic related Variables
 	Vector2D m_Velocity;
@@ -103,7 +118,7 @@ protected: // preotected properties
 	bool m_ArriveOn = false;
 	bool m_FleeOn = false;
 	bool m_PursuitOn = false;
-	bool m_ObjectAvoidance = false;
+	bool m_ObjectAvoidanceOn = false;
 	bool m_WanderingOn = false;
 
 };
