@@ -10,9 +10,12 @@ private:
 	Vector2D m_SteerForce = Vector2D(0.0f, 0.0f);
 
 	float m_ArriveRadius;
+
 	float m_FleeRadius;
+
 	float m_WanderCircleDistance;
 	float m_WanderCircleRadius;
+
 	float m_AvoidSensorLength;
 	float m_AvoidRadius;
 

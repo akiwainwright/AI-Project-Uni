@@ -18,7 +18,7 @@ SteeringBehaviours::SteeringBehaviours(Vehicle* car)
 
 	m_FleeRadius = 250.0f;
 
-	m_WanderAngleRange = 80;
+	m_WanderAngleRange = 180;
 	m_WanderCircleDistance = 40.0f;
 	m_WanderCircleRadius = 10.0f;
 
@@ -187,22 +187,19 @@ Vector2D SteeringBehaviours::Wander()
 	float angleOffset = rand() % ((m_WanderAngleRange * 2) + 1);
 	angleOffset -= m_WanderAngleRange;
 
-	//if (angleOffset < -60.0f || angleOffset > 60.0f)
-	{
+	wanderOffset = rotateVector(wanderOffset, angleOffset);
+	wanderOffset *= m_WanderCircleRadius;
 
-		wanderOffset = rotateVector(wanderOffset, angleOffset);
-		wanderOffset *= m_WanderCircleRadius;
+	Vector2D desiredForce = (wanderCircleCenter + wanderOffset) - m_car->getPosition();
+	desiredForce.Normalize();
+	desiredForce *= MAX_VELOCITY;
 
-		Vector2D desiredForce = (wanderCircleCenter + wanderOffset) - m_car->getPosition();
-		desiredForce.Normalize();
-		desiredForce *= MAX_VELOCITY;
+	Vector2D WanderForce = desiredForce - currentForce;
+	WanderForce.Normalize();
+	WanderForce *= MAX_WANDER_FORCE;
 
-		Vector2D WanderForce = desiredForce - currentForce;
-		WanderForce.Normalize();
-		WanderForce *= MAX_VELOCITY * 10;
+	m_SteerForce += WanderForce;
 
-		m_SteerForce += WanderForce;
-	}
 
 	return m_SteerForce;
 }
