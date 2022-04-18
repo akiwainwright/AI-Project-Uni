@@ -105,7 +105,7 @@ void AIManager::update(const float fDeltaTime)
 {
     for (unsigned int i = 0; i < m_waypointManager.getWaypointCount(); i++) {
         m_waypointManager.getWaypoint(i)->update(fDeltaTime);
-        AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
+        //AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
     }
 
     for (int i = 0; i < m_waypointManager.getQuadpointCount(); i++)
@@ -132,7 +132,15 @@ void AIManager::update(const float fDeltaTime)
 			AddItemToDrawList(wp);
 		}
 	}*/
-    
+
+    //Draw A* Path
+    if(m_pCar->GetPathfinder()->GetTraverseState())
+    {
+        for(Waypoint* waypoint : m_pCar->GetPathfinder()->CalculatedPath())
+        {
+            AddItemToDrawList(waypoint);
+        }
+    }
 
     // update and draw the car (and check for pickup collisions)
 	if (m_pCar != nullptr)
@@ -436,6 +444,7 @@ bool AIManager::checkForCollisions()
         OutputDebugStringA("A collision has occurred!\n");
         m_pickups[0]->hasCollided();
         setRandomPickupPosition(m_pickups[0]);
+        m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pickups[0]->getPosition()));
 
         // you will need to test the type of the pickup to decide on the behaviour
         // m_pCar->dosomething(); ...
