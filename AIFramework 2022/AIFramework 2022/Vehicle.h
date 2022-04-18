@@ -5,7 +5,7 @@
 #include "Vector2D.h"
 #include "Collidable.h"
 #include "SteeringBehaviours.h"
-#include "CollisionHelper.h"
+#include "Pathfinding.h"
 
 
 enum class carColour
@@ -32,6 +32,7 @@ public:
 	void setPositionTo(Vector2D positionTo); // a position to move to
 	void setVehiclePosition(Vector2D position); // the current position - this resets positionTo
 	void setWaypointManager(WaypointManager* wpm);
+	WaypointManager* getWaypointManager() { return m_waypointManager;} 
 	void hasCollided() {}
 
 	//Physics related functions
@@ -89,30 +90,30 @@ protected: // protected methods
 
 
 protected: // preotected properties
-	float m_maxSpeed;
-	float m_currentSpeed;
+	float m_maxSpeed = 0.0f;
+	float m_currentSpeed = 0.0f;
 	
 	Vector2D m_currentPosition;
 	Vector2D m_startPosition;
 	Vector2D m_positionTo;
 	Vector2D m_targetPosition;
 	Vector2D m_lastPosition;
-	WaypointManager* m_waypointManager;
+	WaypointManager* m_waypointManager = nullptr;
 
-	Mode m_VehicleMode;
+	Mode m_VehicleMode = Mode::Pathfinding;
 
 	//Physic related Variables
 	Vector2D m_Velocity;
 	Vector2D m_ClampedVelocity;
 	Vector2D m_Acceleration;
-	float m_Mass;
+	float m_Mass = 0.0f;
 
 	//Steering Variables
-	SteeringBehaviours* m_Steering;
+	SteeringBehaviours* m_Steering = nullptr;
 
-	Vehicle* m_FleeTarget;
-	Vehicle* m_PursuitTarget;
-	Vehicle* m_AvoidTarget;
+	Vehicle* m_FleeTarget = nullptr;
+	Vehicle* m_PursuitTarget = nullptr;
+	Vehicle* m_AvoidTarget = nullptr;
 
 	bool m_SeekOn = false;
 	bool m_ArriveOn = false;
@@ -120,6 +121,9 @@ protected: // preotected properties
 	bool m_PursuitOn = false;
 	bool m_ObjectAvoidanceOn = false;
 	bool m_WanderingOn = false;
+
+	//Pathfinding
+	Pathfinding* m_Pathfinding = nullptr;
 
 };
 

@@ -31,44 +31,15 @@ HRESULT	Vehicle::initMesh(ID3D11Device* pd3dDevice, carColour colour)
 	m_Steering = new SteeringBehaviours(this);
 	m_Mass = 3.0f;
 	
+	m_Pathfinding = new Pathfinding(this);
 
+	m_VehicleMode = Mode::Steering;
+	
 	return hr;
 }
 
 void Vehicle::update(const float deltaTime)
 {
-//#pragma region Steering Behaviour Based Movement
-	/*if (m_SeekOn || m_ArriveOn || m_FleeOn || m_PursuitOn || m_ObjectAvoidance || m_WanderingOn)
-	{
-		m_Steering->SteeringUpdate();
-
-		m_Velocity = m_Velocity + (2 * m_Acceleration * deltaTime);
-		m_Velocity.Truncate(MAX_SPEED);
-
-		m_currentPosition += m_Velocity;
-
-#pragma region Keeping Car On Screen
-		if (m_currentPosition.x > SCREEN_WIDTH / 2)
-		{
-			m_currentPosition.x -= SCREEN_WIDTH;
-		}
-		else if(m_currentPosition.x < -SCREEN_WIDTH / 2)
-		{
-			m_currentPosition.x += SCREEN_WIDTH;
-		}
-
-		if (m_currentPosition.y > SCREEN_HEIGHT / 2)
-		{
-			m_currentPosition.y -= SCREEN_HEIGHT;
-		}
-		else if (m_currentPosition.y < -SCREEN_HEIGHT / 2)
-		{
-			m_currentPosition.y += SCREEN_HEIGHT;
-		}
-#pragma  endregion 
-		*/
-	//}
-
 	switch (m_VehicleMode)
 	{
 		case Mode::Steering:
@@ -78,9 +49,7 @@ void Vehicle::update(const float deltaTime)
 			m_Velocity = m_Velocity + (2 * m_Acceleration * deltaTime);
 			m_Velocity.Truncate(MAX_SPEED);
 
-			m_currentPosition += m_Velocity;
-
-#pragma region Keeping Car On Screen
+			#pragma region Keeping Car On Screen
 			if (m_currentPosition.x > SCREEN_WIDTH / 2)
 			{
 				m_currentPosition.x -= SCREEN_WIDTH;
@@ -98,15 +67,17 @@ void Vehicle::update(const float deltaTime)
 			{
 				m_currentPosition.y += SCREEN_HEIGHT;
 			}
-#pragma  endregion 
+			#pragma  endregion 
 			break;
 		}
 		case Mode::Pathfinding:
 		{
+			m_Pathfinding->Update(deltaTime);
 			break;
 		}
 	}
-	
+
+	m_currentPosition += m_Velocity;
 
 	// rotate the object based on its last & current position
 	Vector2D diff = m_currentPosition - m_lastPosition;

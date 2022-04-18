@@ -57,6 +57,7 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     m_pCar4 = new Vehicle();
     hr = m_pCar4->initMesh(pd3dDevice, carColour::redCar);
     m_pCar4->setVehiclePosition(Vector2D(450.0f, 300.0f));
+    m_pCar4->SetVelocity(Vector2D(0.0f, 0.0f));
 
     // setup the waypoints
     m_waypointManager.createWaypoints(pd3dDevice);
@@ -65,7 +66,6 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     // create a passenger pickup item
     PickupItem* pPickupPassenger = new PickupItem();
     hr = pPickupPassenger->initMesh(pd3dDevice, pickuptype::Passenger);
-    m_pickups.push_back(pPickupPassenger);
 
     // NOTE!! for fuel and speedboost - you will need to create these here yourself
 
@@ -73,6 +73,8 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     setRandomPickupPosition(pPickupPassenger);
 
     m_pCar->SetVehicleMode(Mode::Pathfinding);
+    Vector2D pathfindingSpeed = Vector2D(1, 0) * PATHFINDING_SPEED;
+    m_pCar->SetVelocity(pathfindingSpeed);
 
     m_pCar->SetPursuitTarget(m_pCar2);
     m_pCar->SetAvoidTarget(m_pCar3);
@@ -215,6 +217,8 @@ void AIManager::keyDown(WPARAM param)
                     m_pCar->SetVehicleMode(Mode::Pathfinding);
                     OutputDebugStringA("Switched to Pathfinding Mode\n");
                     m_pCar->ResetSteeringBehaviours();
+                    Vector2D pathfindSpeed = Vector2D(1, 0) * PATHFINDING_SPEED;
+                    m_pCar->SetVelocity(pathfindSpeed);
                     break;
                 }
                 case C_KEY: //Input to display Current Active Steering Behaviours

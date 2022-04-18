@@ -19,6 +19,7 @@ HRESULT	Waypoint::init(ID3D11Device* pd3dDevice, bool isOnTrack, bool checkPoint
 	// create the visible mesh to draw
 	HRESULT hr = DrawableGameObject::initMesh(pd3dDevice);
 
+	m_NodeData = Node();
 	return hr;
 }
 
