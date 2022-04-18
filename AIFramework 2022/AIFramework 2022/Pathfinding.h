@@ -8,6 +8,7 @@ class Pathfinding
 {
 private:
 	bool m_isTraversingPath = false;
+	
 	int m_RemainingWaypoints;
 	int m_CurrentTargetWaypoint = 0;
 	
@@ -16,6 +17,9 @@ private:
 
 	vecWaypoints m_CalculatedPath{};
 	vecWaypoints m_NearWaypoints{};
+
+	vecWaypoints m_FreeWaypoints;
+	vecWaypoints m_CheckedWaypoints;
 
 	Waypoint* m_startWaypoint;
 	Waypoint* m_endWaypoint;

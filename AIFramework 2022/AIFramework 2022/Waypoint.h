@@ -1,15 +1,6 @@
 #pragma once
 #include "DrawableGameObject.h"
 
-struct Node
-{
-    float f;
-    float g;
-    float h;
-
-    Node() { f = 0.0f, g = 0.0f, h = 0.0f;}
-    
-};
 
 class Waypoint :
     public DrawableGameObject
@@ -23,14 +14,14 @@ public:
 	float   distanceToWaypoint(Waypoint* waypoint);
 
 #pragma region Node Data Getters and Setters
-    inline float GetNodeFValue() { return m_NodeData.f;}
-    inline void SetNodeFValue() { m_NodeData.f = m_NodeData.g + m_NodeData.h;}
+    inline float GetNodeFValue() { return m_WaypointFValue;}
+    inline void SetNodeFValue() { m_WaypointFValue = m_WaypointGValue + m_WaypointHValue;}
 
-    inline float GetNodeGValue() { return m_NodeData.g;}
-    inline void SetNodeGValue(float gValue) { m_NodeData.g = gValue;}
+    inline float GetNodeGValue() { return m_WaypointGValue;}
+    inline void SetNodeGValue(float gValue) { m_WaypointGValue= gValue;}
 
-    inline float GetNodeHValue() { return m_NodeData.h; }
-    inline void SetNodeHValue(float hValue) { m_NodeData.h = hValue; }
+    inline float GetNodeHValue() { return m_WaypointHValue; }
+    inline void SetNodeHValue(float hValue) { m_WaypointHValue = hValue; }
 
     inline Waypoint* GetParentWaypoint() { return m_ParentWaypoint; }
     inline void SetParentWaypoint(Waypoint* parent) { m_ParentWaypoint = parent; }
@@ -41,7 +32,9 @@ private:
     int  m_checkpointID;
 
     //Pathfinding variables;
-    Node m_NodeData;
+    float m_WaypointGValue = 0;
+    float m_WaypointHValue = 0;
+    float m_WaypointFValue = 0;
     Waypoint* m_ParentWaypoint = nullptr;
 };
 

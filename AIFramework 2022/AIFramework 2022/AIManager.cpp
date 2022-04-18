@@ -65,15 +65,26 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     // create a passenger pickup item
     PickupItem* pPickupPassenger = new PickupItem();
     hr = pPickupPassenger->initMesh(pd3dDevice, pickuptype::Passenger);
+    m_pickups.push_back(pPickupPassenger);
 
     // NOTE!! for fuel and speedboost - you will need to create these here yourself
+    PickupItem* pPickupFuel = new PickupItem();
+    hr = pPickupFuel->initMesh(pd3dDevice, pickuptype::Fuel);
+    m_pickups.push_back(pPickupFuel);
 
+    PickupItem* pPickupSpeedBoost = new PickupItem();
+    hr = pPickupSpeedBoost->initMesh(pd3dDevice, pickuptype::SpeedBoost);
+    m_pickups.push_back(pPickupSpeedBoost);
+    
     // (needs to be done after waypoint setup)
     setRandomPickupPosition(pPickupPassenger);
+    setRandomPickupPosition(pPickupFuel);
+    setRandomPickupPosition(pPickupSpeedBoost);
 
     m_pCar->SetVehicleMode(Mode::Pathfinding);
     m_pCar->GetPathfinder()->SetWaypointManager(&m_waypointManager);
     m_pCar->setPosition(m_waypointManager.getNearestWaypoint(m_pCar->getPosition())->getPosition());
+    m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(pPickupPassenger->getPosition()));
 
     m_pCar->SetPursuitTarget(m_pCar2);
     m_pCar->SetAvoidTarget(m_pCar3);
@@ -94,7 +105,7 @@ void AIManager::update(const float fDeltaTime)
 {
     for (unsigned int i = 0; i < m_waypointManager.getWaypointCount(); i++) {
         m_waypointManager.getWaypoint(i)->update(fDeltaTime);
-        //AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
+        AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
     }
 
     for (int i = 0; i < m_waypointManager.getQuadpointCount(); i++)
@@ -111,7 +122,7 @@ void AIManager::update(const float fDeltaTime)
     }
 
 	// draw the waypoints nearest to the car
-	
+	/*
     Waypoint* wp = m_waypointManager.getNearestWaypoint(m_pCar->getPosition());
 	if (wp != nullptr)
 	{
@@ -120,7 +131,7 @@ void AIManager::update(const float fDeltaTime)
 		{
 			AddItemToDrawList(wp);
 		}
-	}
+	}*/
     
 
     // update and draw the car (and check for pickup collisions)

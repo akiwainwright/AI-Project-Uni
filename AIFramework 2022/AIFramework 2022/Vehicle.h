@@ -89,6 +89,9 @@ public:
 
 	inline Pathfinding* GetPathfinder() { return m_Pathfinding;}
 
+	inline void SetPathfindDestination(Waypoint* destination) { m_PathfindDestination = destination; }
+	inline Waypoint* GetPathfindDestination() { return m_PathfindDestination; }
+
 
 protected: // protected methods
 
@@ -128,6 +131,7 @@ protected: // preotected properties
 
 	//Pathfinding
 	Pathfinding* m_Pathfinding = nullptr;
+	Waypoint* m_PathfindDestination = nullptr;
 
 };
 
