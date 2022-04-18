@@ -67,7 +67,10 @@ void Vehicle::update(const float deltaTime)
 			{
 				m_currentPosition.y += SCREEN_HEIGHT;
 			}
-			#pragma  endregion 
+			#pragma  endregion
+
+			MoveCar();
+				
 			break;
 		}
 		case Mode::Pathfinding:
@@ -77,7 +80,7 @@ void Vehicle::update(const float deltaTime)
 		}
 	}
 
-	m_currentPosition += m_Velocity;
+	
 
 	// rotate the object based on its last & current position
 	Vector2D diff = m_currentPosition - m_lastPosition;

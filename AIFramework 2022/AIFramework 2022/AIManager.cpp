@@ -5,7 +5,6 @@
 #include "Waypoint.h"
 #include "main.h"
 #include "constants.h"
-#include <iostream>
 #include <sstream>
 
 #include "OuputStrings.h"
@@ -61,7 +60,7 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
 
     // setup the waypoints
     m_waypointManager.createWaypoints(pd3dDevice);
-    m_pCar->setWaypointManager(&m_waypointManager);
+    m_pCar->GetPathfinder()->SetWaypointManager(&m_waypointManager);
 
     // create a passenger pickup item
     PickupItem* pPickupPassenger = new PickupItem();
@@ -73,8 +72,8 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     setRandomPickupPosition(pPickupPassenger);
 
     m_pCar->SetVehicleMode(Mode::Pathfinding);
-    Vector2D pathfindingSpeed = Vector2D(1, 0) * PATHFINDING_SPEED;
-    m_pCar->SetVelocity(pathfindingSpeed);
+    m_pCar->GetPathfinder()->SetWaypointManager(&m_waypointManager);
+    m_pCar->setPosition(m_waypointManager.getNearestWaypoint(m_pCar->getPosition())->getPosition());
 
     m_pCar->SetPursuitTarget(m_pCar2);
     m_pCar->SetAvoidTarget(m_pCar3);
@@ -95,7 +94,7 @@ void AIManager::update(const float fDeltaTime)
 {
     for (unsigned int i = 0; i < m_waypointManager.getWaypointCount(); i++) {
         m_waypointManager.getWaypoint(i)->update(fDeltaTime);
-        AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
+        //AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
     }
 
     for (int i = 0; i < m_waypointManager.getQuadpointCount(); i++)
@@ -112,7 +111,7 @@ void AIManager::update(const float fDeltaTime)
     }
 
 	// draw the waypoints nearest to the car
-	/*
+	
     Waypoint* wp = m_waypointManager.getNearestWaypoint(m_pCar->getPosition());
 	if (wp != nullptr)
 	{
@@ -122,7 +121,7 @@ void AIManager::update(const float fDeltaTime)
 			AddItemToDrawList(wp);
 		}
 	}
-    */
+    
 
     // update and draw the car (and check for pickup collisions)
 	if (m_pCar != nullptr)
@@ -217,8 +216,6 @@ void AIManager::keyDown(WPARAM param)
                     m_pCar->SetVehicleMode(Mode::Pathfinding);
                     OutputDebugStringA("Switched to Pathfinding Mode\n");
                     m_pCar->ResetSteeringBehaviours();
-                    Vector2D pathfindSpeed = Vector2D(1, 0) * PATHFINDING_SPEED;
-                    m_pCar->SetVelocity(pathfindSpeed);
                     break;
                 }
                 case C_KEY: //Input to display Current Active Steering Behaviours

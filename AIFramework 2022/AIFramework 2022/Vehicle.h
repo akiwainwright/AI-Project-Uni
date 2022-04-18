@@ -30,10 +30,12 @@ public:
 	void setMaxSpeed(const float maxSpeed) { m_maxSpeed = maxSpeed; }
 	void setCurrentSpeed(const float speed); // a ratio: a value between 0 and 1 (1 being max speed)
 	void setPositionTo(Vector2D positionTo); // a position to move to
+	inline Vector2D getPositionTo() { return m_positionTo; }
 	void setVehiclePosition(Vector2D position); // the current position - this resets positionTo
 	void setWaypointManager(WaypointManager* wpm);
 	WaypointManager* getWaypointManager() { return m_waypointManager;} 
 	void hasCollided() {}
+	inline void MoveCar() { m_currentPosition += m_Velocity; }
 
 	//Physics related functions
 	inline void CalculateAcceleration(Vector2D force) { m_Acceleration = force / m_Mass; }
@@ -84,6 +86,8 @@ public:
 	inline Mode GetVehicleMode() { return m_VehicleMode; }
 
 	void OutputCurrentModes();
+
+	inline Pathfinding* GetPathfinder() { return m_Pathfinding;}
 
 
 protected: // protected methods
