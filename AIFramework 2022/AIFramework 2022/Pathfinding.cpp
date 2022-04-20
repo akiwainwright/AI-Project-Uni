@@ -33,7 +33,7 @@ void Pathfinding::Update(float deltaTime)
 	{
 		m_currentState = VehicleState::GetFuelImmediately;
 	}
-	else if (m_fuel < m_maxFuel * 0.5f)
+	else if (m_fuel < m_maxFuel * 0.3f)
 	{
 		m_currentState = VehicleState::GetFuel;
 	}
