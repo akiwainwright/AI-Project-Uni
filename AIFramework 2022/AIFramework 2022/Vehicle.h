@@ -132,6 +132,5 @@ protected: // preotected properties
 	//Pathfinding
 	Pathfinding* m_Pathfinding = nullptr;
 	Waypoint* m_PathfindDestination = nullptr;
-
 };
 

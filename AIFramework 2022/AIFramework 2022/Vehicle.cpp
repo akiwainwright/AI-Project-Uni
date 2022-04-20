@@ -76,6 +76,7 @@ void Vehicle::update(const float deltaTime)
 		case Mode::Pathfinding:
 		{
 			m_Pathfinding->Update(deltaTime);
+
 			break;
 		}
 	}

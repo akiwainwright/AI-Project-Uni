@@ -12,6 +12,7 @@ Pathfinding::Pathfinding(Vehicle* car): m_startWaypoint(nullptr),
 	m_wpm = nullptr;
 	m_isTraversingPath = false;
 	m_isFindingPath = false;
+	m_fuel = m_maxFuel;
 }
 
 Pathfinding::~Pathfinding()
@@ -31,6 +32,10 @@ void Pathfinding::Update(float deltaTime)
 	}
 	else
 	{
+		string fuel = "Remaining fuel: " + to_string(m_fuel) + "\n";
+		OutputDebugStringA(fuel.c_str());
+		
+		m_fuel -= deltaTime * m_fuelLossPerFrame;
 		TraversePath();
 	}
 }
@@ -189,7 +194,18 @@ void Pathfinding::TraversePath()
 	//Calculating direction to the next waypoint and setting the speed to travel
 	Vector2D direction = m_CalculatedPath[m_CurrentTargetWaypoint]->getPosition() - m_car->getPosition();
 	direction.Normalize();
-	Vector2D velocity = direction * PATH_TRAVERSE_SPEED;
+	Vector2D velocity;
+	
+	if(m_fuel > 0)
+	{
+		velocity = direction * PATH_TRAVERSE_SPEED;
+	}
+	else
+	{
+		m_fuel = 0.0f;
+		velocity = direction * 0.05f * PATH_TRAVERSE_SPEED;
+	}
+	
 	m_car->SetVelocity(velocity);
 
 	//Creating a buffer zone to allow the vehicle to detect it has reached the target waypoint

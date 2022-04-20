@@ -9,7 +9,10 @@ class Pathfinding
 private:
 	bool m_isTraversingPath = false;
 	bool m_isFindingPath = false;
-	
+
+	float m_maxFuel = 100.0f;
+	float m_fuelLossPerFrame = 2.0f;
+	float m_fuel;
 	int m_CurrentTargetWaypoint = 0;
 	
 	class Vehicle* m_car;
