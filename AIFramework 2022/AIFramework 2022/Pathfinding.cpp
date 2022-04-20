@@ -4,6 +4,9 @@
 
 #include "constants.h"
 #include "Vehicle.h"
+#include "PickupItem.h"
+
+using namespace std;
 
 Pathfinding::Pathfinding(Vehicle* car): m_startWaypoint(nullptr),
                                         m_endWaypoint(nullptr)
@@ -26,6 +29,34 @@ Pathfinding::~Pathfinding()
 
 void Pathfinding::Update(float deltaTime)
 {
+	if (m_fuel < m_maxFuel * 0.1f && !m_isGettingFuel)
+	{
+		m_currentState = VehicleState::GetFuelImmediately;
+	}
+	else if (m_fuel < m_maxFuel * 0.5f)
+	{
+		m_currentState = VehicleState::GetFuel;
+	}
+	else if (!m_hasSpeedBoost)
+	{
+		m_currentState = VehicleState::GetSpeedBoost;
+	}
+	else
+	{
+		m_currentState = VehicleState::GetPassenger;
+	}
+
+	if (m_hasSpeedBoost)
+	{
+		m_speedBoostCountdown -= deltaTime * 2.0f;
+
+		if (m_speedBoostCountdown < 0)
+		{
+			ResetBoostTimer();
+			m_hasSpeedBoost = false;
+		}
+	}
+
 	if(!m_isTraversingPath)
 	{
 		CalculatePath();
@@ -42,6 +73,7 @@ void Pathfinding::Update(float deltaTime)
 
 void Pathfinding::CalculatePath()
 {
+	m_car->SetVelocity(Vector2D(0, 0));
 	ResetWaypointPathData();
 	//Clearing previously calculated path
 	m_CalculatedPath.clear();
@@ -55,7 +87,7 @@ void Pathfinding::CalculatePath()
 
 	//Setting the start and end nodes for A* pathfinding
 	m_startWaypoint = m_wpm->getNearestWaypoint(m_car->getPosition());
-	m_endWaypoint = m_wpm->getNearestWaypoint(m_car->GetPathfindDestination()->getPosition());
+	m_endWaypoint = m_wpm->getNearestWaypoint(m_car->GetPickupTarget()->getPosition());
 	m_FreeWaypoints.push_back(m_startWaypoint);
 
 	m_startWaypoint->SetNodeGValue(0.0f);
@@ -92,7 +124,7 @@ void Pathfinding::AStarPath()
 			{
 				//Comparing fvalues with current waypoint if the waypoint being checked has a parent waypoint
 				Waypoint* temp = waypointToAdd;
-				temp->SetNodeGValue(distanceFromCurrentWaypoint + m_currentWaypoint->GetNodeGValue());
+				temp->SetNodeGValue(m_currentWaypoint->GetNodeGValue() + distanceFromCurrentWaypoint);
 				temp->SetNodeHValue(waypointToAdd->getPosition().Distance(m_endWaypoint->getPosition()));
 				temp->SetNodeFValue();
 				
@@ -110,12 +142,14 @@ void Pathfinding::AStarPath()
 			{
 				//Calculating values for waypoint and setting parent
 				waypointToAdd->SetParentWaypoint(m_currentWaypoint);
-				waypointToAdd->SetNodeGValue(distanceFromCurrentWaypoint + m_currentWaypoint->GetNodeGValue());
+				waypointToAdd->SetNodeGValue(m_currentWaypoint->GetNodeGValue() + distanceFromCurrentWaypoint);
 				waypointToAdd->SetNodeHValue(waypointToAdd->getPosition().Distance(m_endWaypoint->getPosition()));
-				waypointToAdd->SetNodeFValue();				
+				waypointToAdd->SetNodeFValue();	
+
+				m_FreeWaypoints.push_back(waypointToAdd);
 			}			
 
-			m_FreeWaypoints.push_back(waypointToAdd);
+			
 		}
 	}
 	AStarPath();
@@ -123,7 +157,11 @@ void Pathfinding::AStarPath()
 
 void Pathfinding::FindWaypointWithLowestF()
 {
-	if(m_FreeWaypoints.size() < 2)
+	if (m_FreeWaypoints.size() < 1)
+	{
+		return;
+	}
+	else if(m_FreeWaypoints.size() == 1)
 	{
 		m_currentWaypoint = m_FreeWaypoints[m_FreeWaypoints.size() - 1];
 	}
@@ -144,8 +182,9 @@ void Pathfinding::FindWaypointWithLowestF()
 				}
 			}
 		}
+
 		m_currentWaypoint = temp;
-		
+
 	}
 }
 
@@ -196,22 +235,25 @@ void Pathfinding::TraversePath()
 	direction.Normalize();
 	Vector2D velocity;
 	
-	if(m_fuel > 0)
+	if(m_fuel > 0 && m_hasSpeedBoost)
+	{
+		velocity = direction * m_speedMultiplier * PATH_TRAVERSE_SPEED;
+	}
+	else if(m_fuel > 0 && !m_hasSpeedBoost)
 	{
 		velocity = direction * PATH_TRAVERSE_SPEED;
 	}
-	else
+	else 
 	{
 		m_fuel = 0.0f;
-		velocity = direction * 0.05f * PATH_TRAVERSE_SPEED;
+		velocity = direction * 0.25f * PATH_TRAVERSE_SPEED;
 	}
 	
 	m_car->SetVelocity(velocity);
 
 	//Creating a buffer zone to allow the vehicle to detect it has reached the target waypoint
-	if((m_CalculatedPath[m_CurrentTargetWaypoint]->getPosition() - m_car->getPosition()).Length() < 5.0f)
+	if((m_CalculatedPath[m_CurrentTargetWaypoint]->getPosition() - m_car->getPosition()).Length() < 8.0f)
 	{
-		OutputDebugStringA("Got To Next Waypoint\n");
 		m_CurrentTargetWaypoint++;
 
 		//Checking to make sure there is another waypoint to got 

@@ -92,6 +92,9 @@ public:
 	inline void SetPathfindDestination(Waypoint* destination) { m_PathfindDestination = destination; }
 	inline Waypoint* GetPathfindDestination() { return m_PathfindDestination; }
 
+	inline void SetPickupTarget(PickupItem* targetItem) { PathFindTargetPickup = targetItem; }
+	inline PickupItem* GetPickupTarget() { return PathFindTargetPickup; }
+
 
 protected: // protected methods
 
@@ -132,5 +135,7 @@ protected: // preotected properties
 	//Pathfinding
 	Pathfinding* m_Pathfinding = nullptr;
 	Waypoint* m_PathfindDestination = nullptr;
+
+	PickupItem* PathFindTargetPickup = nullptr;
 };
 

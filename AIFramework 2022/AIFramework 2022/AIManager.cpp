@@ -84,7 +84,8 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
     m_pCar->SetVehicleMode(Mode::Pathfinding);
     m_pCar->GetPathfinder()->SetWaypointManager(&m_waypointManager);
     m_pCar->setPosition(m_waypointManager.getNearestWaypoint(m_pCar->getPosition())->getPosition());
-    m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(pPickupPassenger->getPosition()));
+    m_pCar->SetPickupTarget(m_pickups[2]);
+    m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
 
     m_pCar->SetPursuitTarget(m_pCar2);
     m_pCar->SetAvoidTarget(m_pCar3);
@@ -103,6 +104,7 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
 
 void AIManager::update(const float fDeltaTime)
 {
+
     for (unsigned int i = 0; i < m_waypointManager.getWaypointCount(); i++) {
         m_waypointManager.getWaypoint(i)->update(fDeltaTime);
         //AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
@@ -150,29 +152,38 @@ void AIManager::update(const float fDeltaTime)
 		AddItemToDrawList(m_pCar);
 	}
 
-    if (m_pCar->GetVehicleMode() == Mode::Steering)
+    if (m_pCar->GetVehicleMode() == Mode::Pathfinding)
     {
-        if (m_pCar2 != nullptr)
+        switch (m_pCar->GetPathfinder()->GetCurrentState())
         {
-            m_pCar2->update(fDeltaTime);
-            checkForCollisions();
-            AddItemToDrawList(m_pCar2);
-        }
-
-        if (m_pCar3 != nullptr)
-        {
-            m_pCar3->update(fDeltaTime);
-            checkForCollisions();
-            AddItemToDrawList(m_pCar3);
-        }
-
-        if (m_pCar->GetFleeState())
-        {
-            if (m_pCar4 != nullptr)
+            case VehicleState::GetSpeedBoost:
             {
-                m_pCar4->update(fDeltaTime);
-                checkForCollisions();
-                AddItemToDrawList(m_pCar4);
+                m_pCar->SetPickupTarget(m_pickups[2]);
+                break;
+            }
+            case VehicleState::GetFuel:
+            {
+                m_pCar->SetPickupTarget(m_pickups[1]);
+                m_pCar->GetPathfinder()->IsGettingFuel();
+                break;
+            }
+            case VehicleState::GetPassenger:
+            {
+                m_pCar->SetPickupTarget(m_pickups[0]);
+                break;
+            }
+            case VehicleState::GetFuelImmediately:
+            {
+                m_pCar->SetPickupTarget(m_pickups[1]);
+                if (m_pCar->GetPathfinder()->GetTraverseState())
+                {
+                    m_pCar->GetPathfinder()->ResetCurrentWaypoint();
+                    m_pCar->GetPathfinder()->StopTraversingPath();
+                    m_pCar->GetPathfinder()->CalculatePath();
+                    m_pCar->GetPathfinder()->IsGettingFuel();
+                    m_pCar->GetPathfinder()->ResetState();
+                }
+                break;
             }
         }
     }
@@ -421,14 +432,14 @@ bool AIManager::checkForCollisions()
 
     // do the same for a pickup item
     // a pickup - !! NOTE it is only referring the first one in the list !!
-    // to get the passenger, fuel or speedboost specifically you will need to iterate the pickups and test their type (getType()) - see the pickup class
+    // to get the passenger, fuel or speedboost specifically you will need to iterate the pickups and test their type (getType()) - see the pickup class  
     XMVECTOR puPos;
     XMVECTOR puScale;
     XMMatrixDecompose(
         &puScale,
         &dummy,
         &puPos,
-        XMLoadFloat4x4(m_pickups[0]->getTransform())
+        XMLoadFloat4x4(m_pickups[2]->getTransform())
     );
 
     // bounding sphere for pickup item
@@ -436,18 +447,78 @@ bool AIManager::checkForCollisions()
     BoundingSphere boundingSpherePU;
     XMStoreFloat3(&boundingSpherePU.Center, puPos);
     boundingSpherePU.Radius = scale.x;
+   
+    XMVECTOR puPos2;
+    XMVECTOR puScale2;
+    XMMatrixDecompose(
+        &puScale2,
+        &dummy,
+        &puPos2,
+        XMLoadFloat4x4(m_pickups[1]->getTransform())
+    );
+
+    // bounding sphere for pickup item
+    XMStoreFloat3(&scale, puScale2);
+    BoundingSphere boundingSpherePU2;
+    XMStoreFloat3(&boundingSpherePU2.Center, puPos2);
+    boundingSpherePU2.Radius = scale.x;
+
+    XMVECTOR puPos3;
+    XMVECTOR puScale3;
+    XMMatrixDecompose(
+        &puScale3,
+        &dummy,
+        &puPos3,
+        XMLoadFloat4x4(m_pickups[0]->getTransform())
+    );
+
+    // bounding sphere for pickup item
+    XMStoreFloat3(&scale, puScale3);
+    BoundingSphere boundingSpherePU3;
+    XMStoreFloat3(&boundingSpherePU3.Center, puPos3);
+    boundingSpherePU3.Radius = scale.x;
 
 	// THIS IS generally where you enter code to test each type of pickup
     // does the car bounding sphere collide with the pickup bounding sphere?
+    //Collision for Speedboost
     if (boundingSphereCar.Intersects(boundingSpherePU))
     {
         OutputDebugStringA("A collision has occurred!\n");
+
+        m_pickups[2]->hasCollided();
+        setRandomPickupPosition(m_pickups[2]);
+        m_pCar->GetPathfinder()->ResetBoostTimer();
+        m_pCar->GetPathfinder()->SwitchBoostOn();
+
+        m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
+
+        return true;
+    }
+
+    //Collision for fuel pickup
+    if (boundingSphereCar.Intersects(boundingSpherePU2))
+    {
+        OutputDebugStringA("A collision has occurred!\n");
+
+        m_pickups[1]->hasCollided();
+        setRandomPickupPosition(m_pickups[1]);
+        m_pCar->GetPathfinder()->ResetFuel();
+        m_pCar->GetPathfinder()->GotFuel();
+
+        m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
+
+        return true;
+    }
+
+    //Collision for Passenger
+    if (boundingSphereCar.Intersects(boundingSpherePU3))
+    {
+        OutputDebugStringA("A collision has occurred!\n");
+
         m_pickups[0]->hasCollided();
         setRandomPickupPosition(m_pickups[0]);
-        m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pickups[0]->getPosition()));
 
-        // you will need to test the type of the pickup to decide on the behaviour
-        // m_pCar->dosomething(); ...
+        m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
 
         return true;
     }
