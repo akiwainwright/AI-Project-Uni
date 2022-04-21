@@ -176,11 +176,11 @@ void AIManager::update(const float fDeltaTime)
 
         if(m_pCar->GetFleeState())
         {
-            if (m_pCar != nullptr)
+            if (m_pCar4 != nullptr)
             {
-                m_pCar->update(fDeltaTime);
+                m_pCar4->update(fDeltaTime);
                 checkForCollisions();
-                AddItemToDrawList(m_pCar);
+                AddItemToDrawList(m_pCar4);
             }
         }
     }
@@ -197,7 +197,6 @@ void AIManager::update(const float fDeltaTime)
             case VehicleState::GetFuel:
             {
                 m_pCar->SetPickupTarget(m_pickups[1]);
-                m_pCar->GetPathfinder()->IsGettingFuel();
                 break;
             }
             case VehicleState::GetPassenger:
@@ -210,11 +209,11 @@ void AIManager::update(const float fDeltaTime)
                 m_pCar->SetPickupTarget(m_pickups[1]);
                 if (m_pCar->GetPathfinder()->GetTraverseState())
                 {
-                    m_pCar->GetPathfinder()->ResetCurrentWaypoint();
                     m_pCar->GetPathfinder()->StopTraversingPath();
+                    m_pCar->GetPathfinder()->ResetCurrentWaypoint();
                     m_pCar->GetPathfinder()->CalculatePath();
                     m_pCar->GetPathfinder()->IsGettingFuel();
-                    m_pCar->GetPathfinder()->ResetState();
+                    //m_pCar->GetPathfinder()->ResetState();
                 }
                 break;
             }
