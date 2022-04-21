@@ -468,95 +468,72 @@ bool AIManager::checkForCollisions()
     // do the same for a pickup item
     // a pickup - !! NOTE it is only referring the first one in the list !!
     // to get the passenger, fuel or speedboost specifically you will need to iterate the pickups and test their type (getType()) - see the pickup class  
-    XMVECTOR puPos;
-    XMVECTOR puScale;
-    XMMatrixDecompose(
-        &puScale,
-        &dummy,
-        &puPos,
-        XMLoadFloat4x4(m_pickups[2]->getTransform())
-    );
 
-    // bounding sphere for pickup item
-    XMStoreFloat3(&scale, puScale);
-    BoundingSphere boundingSpherePU;
-    XMStoreFloat3(&boundingSpherePU.Center, puPos);
-    boundingSpherePU.Radius = scale.x;
-   
-    XMVECTOR puPos2;
-    XMVECTOR puScale2;
-    XMMatrixDecompose(
-        &puScale2,
-        &dummy,
-        &puPos2,
-        XMLoadFloat4x4(m_pickups[1]->getTransform())
-    );
+    BoundingSphere pickupCollisionSphere[3];
 
-    // bounding sphere for pickup item
-    XMStoreFloat3(&scale, puScale2);
-    BoundingSphere boundingSpherePU2;
-    XMStoreFloat3(&boundingSpherePU2.Center, puPos2);
-    boundingSpherePU2.Radius = scale.x;
+    for (int i = 0; i < m_pickups.size(); ++i)
+    {
+        XMVECTOR puPos;
+        XMVECTOR puScale;
+        XMMatrixDecompose(
+            &puScale,
+            &dummy,
+            &puPos,
+            XMLoadFloat4x4(m_pickups[i]->getTransform())
+        );
 
-    XMVECTOR puPos3;
-    XMVECTOR puScale3;
-    XMMatrixDecompose(
-        &puScale3,
-        &dummy,
-        &puPos3,
-        XMLoadFloat4x4(m_pickups[0]->getTransform())
-    );
+        // bounding sphere for pickup item
+        XMStoreFloat3(&scale, puScale);
+        BoundingSphere boundingSpherePU;
+        XMStoreFloat3(&boundingSpherePU.Center, puPos);
+        boundingSpherePU.Radius = scale.x;
 
-    // bounding sphere for pickup item
-    XMStoreFloat3(&scale, puScale3);
-    BoundingSphere boundingSpherePU3;
-    XMStoreFloat3(&boundingSpherePU3.Center, puPos3);
-    boundingSpherePU3.Radius = scale.x;
+        pickupCollisionSphere[i] = boundingSpherePU;
+    }
+    
 
 	// THIS IS generally where you enter code to test each type of pickup
     // does the car bounding sphere collide with the pickup bounding sphere?
-    //Collision for Speedboost
-    if (boundingSphereCar.Intersects(boundingSpherePU))
+    for (int i = 0; i < m_pickups.size(); ++i)
     {
-        OutputDebugStringA("A collision has occurred!\n");
+        if (boundingSphereCar.Intersects(pickupCollisionSphere[i]))
+        {
+            pickuptype Type = m_pickups[i]->getType();
 
-        m_pickups[2]->hasCollided();
-        setRandomPickupPosition(m_pickups[2]);
-        m_pCar->GetPathfinder()->ResetBoostTimer();
-        m_pCar->GetPathfinder()->SwitchBoostOn();
+            switch (Type)
+            {
+            case pickuptype::Fuel:
+                //OutputDebugStringA("Collected Fuel\n");
+                m_pickups[1]->hasCollided();
+                setRandomPickupPosition(m_pickups[1]);
+                m_pCar->GetPathfinder()->ResetFuel();
+                m_pCar->GetPathfinder()->GotFuel();
 
-        m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
+                m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
+                break;
+            case pickuptype::SpeedBoost:
+                //OutputDebugStringA("Collected SpeedBoost\n");
+                m_pickups[2]->hasCollided();
+                setRandomPickupPosition(m_pickups[2]);
+                m_pCar->GetPathfinder()->ResetBoostTimer();
+                m_pCar->GetPathfinder()->SwitchBoostOn();
 
-        return true;
+                m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
+                break;
+            case pickuptype::Passenger:
+                //OutputDebugStringA("Collected Passenger\n");
+                m_pickups[0]->hasCollided();
+                setRandomPickupPosition(m_pickups[0]);
+
+                m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
+                break;
+            default:
+                break;
+            }
+        }
     }
 
-    //Collision for fuel pickup
-    if (boundingSphereCar.Intersects(boundingSpherePU2))
-    {
-        OutputDebugStringA("A collision has occurred!\n");
 
-        m_pickups[1]->hasCollided();
-        setRandomPickupPosition(m_pickups[1]);
-        m_pCar->GetPathfinder()->ResetFuel();
-        m_pCar->GetPathfinder()->GotFuel();
-
-        m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
-
-        return true;
-    }
-
-    //Collision for Passenger
-    if (boundingSphereCar.Intersects(boundingSpherePU3))
-    {
-        OutputDebugStringA("A collision has occurred!\n");
-
-        m_pickups[0]->hasCollided();
-        setRandomPickupPosition(m_pickups[0]);
-
-        m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
-
-        return true;
-    }
 
     return false;
 }
