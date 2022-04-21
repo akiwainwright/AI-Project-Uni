@@ -207,14 +207,12 @@ void AIManager::update(const float fDeltaTime)
             case VehicleState::GetFuelImmediately:
             {
                 m_pCar->SetPickupTarget(m_pickups[1]);
-                if (m_pCar->GetPathfinder()->GetTraverseState())
-                {
-                    m_pCar->GetPathfinder()->StopTraversingPath();
-                    m_pCar->GetPathfinder()->ResetCurrentWaypoint();
-                    m_pCar->GetPathfinder()->CalculatePath();
-                    m_pCar->GetPathfinder()->IsGettingFuel();
-                    //m_pCar->GetPathfinder()->ResetState();
-                }
+                m_pCar->GetPathfinder()->StopTraversingPath();
+                m_pCar->GetPathfinder()->ResetCurrentWaypoint();
+                m_pCar->GetPathfinder()->ResetPath();
+                m_pCar->GetPathfinder()->GetFuel();
+ 
+
                 break;
             }
         }
@@ -507,7 +505,6 @@ bool AIManager::checkForCollisions()
                 m_pickups[1]->hasCollided();
                 setRandomPickupPosition(m_pickups[1]);
                 m_pCar->GetPathfinder()->ResetFuel();
-                m_pCar->GetPathfinder()->GotFuel();
 
                 m_pCar->SetPathfindDestination(m_waypointManager.getNearestWaypoint(m_pCar->GetPickupTarget()->getPosition()));
                 break;

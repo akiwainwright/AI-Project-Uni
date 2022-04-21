@@ -29,21 +29,9 @@ Pathfinding::~Pathfinding()
 
 void Pathfinding::Update(float deltaTime)
 {
-	if (m_fuel < m_maxFuel * 0.1f && !m_isGettingFuel)
+	if (m_fuel <= 0.0f && m_currentState != VehicleState::GetFuel)
 	{
 		m_currentState = VehicleState::GetFuelImmediately;
-	}
-	else if (m_fuel < m_maxFuel * 0.3f)
-	{
-		m_currentState = VehicleState::GetFuel;
-	}
-	else if (!m_hasSpeedBoost)
-	{
-		m_currentState = VehicleState::GetSpeedBoost;
-	}
-	else
-	{
-		m_currentState = VehicleState::GetPassenger;
 	}
 
 	if (m_hasSpeedBoost)
@@ -59,7 +47,14 @@ void Pathfinding::Update(float deltaTime)
 
 	if(!m_isTraversingPath)
 	{
-		CalculatePath();
+		if(!m_pathHasBeenReset)
+		{
+			ResetPath();
+		}
+		else
+		{
+			CalculatePath();
+		}
 	}
 	else
 	{
@@ -71,7 +66,7 @@ void Pathfinding::Update(float deltaTime)
 	}
 }
 
-void Pathfinding::CalculatePath()
+void Pathfinding::ResetPath()
 {
 	m_car->SetVelocity(Vector2D(0, 0));
 	ResetWaypointPathData();
@@ -93,11 +88,11 @@ void Pathfinding::CalculatePath()
 	m_startWaypoint->SetNodeGValue(0.0f);
 	m_startWaypoint->SetNodeHValue(m_startWaypoint->getPosition().Distance(m_endWaypoint->getPosition()));
 	m_startWaypoint->SetNodeFValue();
-	
-	AStarPath();
+
+	m_pathHasBeenReset = true;
 }
 
-void Pathfinding::AStarPath()
+void Pathfinding::CalculatePath()
 {
 	FindWaypointWithLowestF();
 
@@ -152,7 +147,6 @@ void Pathfinding::AStarPath()
 			
 		}
 	}
-	AStarPath();
 }
 
 void Pathfinding::FindWaypointWithLowestF()
@@ -213,6 +207,7 @@ void Pathfinding::GeneratePath()
 	{
 		m_CalculatedPath.insert(m_CalculatedPath.begin(), m_startWaypoint);
 		m_isTraversingPath = true;
+		m_pathHasBeenReset = false;
 	}
 }
 
@@ -226,6 +221,22 @@ bool Pathfinding::CheckNodeHasAlreadyBeenChecked(Waypoint* wp)
 		}
 	}
 	return false;
+}
+
+void Pathfinding::SetBaseStates()
+{
+	if (m_fuel < m_maxFuel * 0.3f)
+	{
+		m_currentState = VehicleState::GetFuel;
+	}
+	else if (!m_hasSpeedBoost)
+	{
+		m_currentState = VehicleState::GetSpeedBoost;
+	}
+	else
+	{
+		m_currentState = VehicleState::GetPassenger;
+	}
 }
 
 void Pathfinding::TraversePath()
@@ -265,6 +276,7 @@ void Pathfinding::TraversePath()
 		{
 			m_CurrentTargetWaypoint = 0;
 			m_isTraversingPath = false; //notifying that vehicle is no waypoint left in the calculate path
+			SetBaseStates();
 			return;
 		}
 		

@@ -14,11 +14,11 @@ class Pathfinding
 {
 private:
 	bool m_isTraversingPath = false;
+	bool m_pathHasBeenReset = false;
 	bool m_isFindingPath = false;
 	bool m_hasSpeedBoost = false;
-	bool m_isGettingFuel = false;
 
-	float m_maxFuel = 75.0f;
+	float m_maxFuel = 15.0f;
 	float m_fuelLossPerFrame = 5.0f;
 	float m_fuel;
 	float m_speedMultiplier = 2.5f;
@@ -46,8 +46,8 @@ public:
 	~Pathfinding();
 
 	void Update(float deltaTime);
+	void ResetPath();
 	void CalculatePath();
-	void AStarPath();
 	void FindWaypointWithLowestF();
 	void MoveNodeFromFreeToChecked();
 	void GeneratePath();
@@ -76,7 +76,7 @@ public:
 	inline void ResetCurrentWaypoint() { m_CurrentTargetWaypoint = 0; }
 	inline void ResetState() { m_currentState = VehicleState::GetPassenger; }
 
-	inline void IsGettingFuel() { m_isGettingFuel = true; }
-	inline void GotFuel() { m_isGettingFuel = false; }
+	inline void GetFuel() { m_currentState = VehicleState::GetFuel; }
+	void SetBaseStates();
 };
 
