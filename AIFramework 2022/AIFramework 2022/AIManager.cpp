@@ -104,12 +104,25 @@ HRESULT AIManager::initialise(ID3D11Device* pd3dDevice)
 
 void AIManager::update(const float fDeltaTime)
 {
-
-    for (unsigned int i = 0; i < m_waypointManager.getWaypointCount(); i++) {
-        m_waypointManager.getWaypoint(i)->update(fDeltaTime);
-        //AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
+    //Draw A* Path
+    if(m_pCar->GetPathfinder()->GetTraverseState())
+    {
+        for(Waypoint* waypoint : m_pCar->GetPathfinder()->CalculatedPath())
+        {
+            AddItemToDrawList(waypoint);
+        }
     }
-
+    
+    
+    {
+        for (unsigned int i = 0; i < m_waypointManager.getWaypointCount(); i++) {
+            m_waypointManager.getWaypoint(i)->update(fDeltaTime);
+            if(m_pCar->GetVehicleMode() == Mode::Steering)
+            {
+                AddItemToDrawList(m_waypointManager.getWaypoint(i)); // if you uncomment this, it will display the waypoints
+            }
+        }
+    }
     for (int i = 0; i < m_waypointManager.getQuadpointCount(); i++)
     {
         Waypoint* qp = m_waypointManager.getQuadpoint(i);
@@ -135,14 +148,7 @@ void AIManager::update(const float fDeltaTime)
 		}
 	}*/
 
-    //Draw A* Path
-    if(m_pCar->GetPathfinder()->GetTraverseState())
-    {
-        for(Waypoint* waypoint : m_pCar->GetPathfinder()->CalculatedPath())
-        {
-            AddItemToDrawList(waypoint);
-        }
-    }
+    
 
     // update and draw the car (and check for pickup collisions)
 	if (m_pCar != nullptr)
@@ -151,6 +157,33 @@ void AIManager::update(const float fDeltaTime)
 		checkForCollisions();
 		AddItemToDrawList(m_pCar);
 	}
+
+    if(m_pCar->GetVehicleMode() == Mode::Steering)
+    {
+        if (m_pCar2 != nullptr)
+        {
+            m_pCar2->update(fDeltaTime);
+            checkForCollisions();
+            AddItemToDrawList(m_pCar2);
+        }
+
+        if (m_pCar3 != nullptr)
+        {
+            m_pCar3->update(fDeltaTime);
+            checkForCollisions();
+            AddItemToDrawList(m_pCar3);
+        }
+
+        if(m_pCar->GetFleeState())
+        {
+            if (m_pCar != nullptr)
+            {
+                m_pCar->update(fDeltaTime);
+                checkForCollisions();
+                AddItemToDrawList(m_pCar);
+            }
+        }
+    }
 
     if (m_pCar->GetVehicleMode() == Mode::Pathfinding)
     {
@@ -244,6 +277,8 @@ void AIManager::keyDown(WPARAM param)
                 case TAB_KEY:
                 {
                     m_pCar->SetVehicleMode(Mode::Pathfinding);
+                    m_pCar->GetPathfinder()->SetTraverseState(false);
+                    m_pCar->GetPathfinder()->ResetCurrentWaypoint();
                     OutputDebugStringA("Switched to Pathfinding Mode\n");
                     m_pCar->ResetSteeringBehaviours();
                     break;
@@ -366,6 +401,7 @@ void AIManager::keyDown(WPARAM param)
             {
                 case TAB_KEY:
                     m_pCar->SetVehicleMode(Mode::Steering);
+                m_pCar->SetVelocity(Vector2D(0.0f, 0.0f));
                     OutputDebugStringA("Switched to Steering Behaviours\n");
                     m_pCar->OutputCurrentModes();
                     break;
