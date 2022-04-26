@@ -94,57 +94,61 @@ void Pathfinding::ResetPath()
 
 void Pathfinding::CalculatePath()
 {
-	FindWaypointWithLowestF();
 
-	MoveNodeFromFreeToChecked();
-
-	if(m_currentWaypoint == m_endWaypoint)
+	while (m_FreeWaypoints.size() != 0)
 	{
-		GeneratePath();
-		return;
-	}
+		FindWaypointWithLowestF();
 
-	vecWaypoints NearWaypoints = m_wpm->getNeighbouringWaypoints(m_currentWaypoint);
+		MoveNodeFromFreeToChecked();
 
-	for(int i = 0; i < NearWaypoints.size(); ++i)
-	{
-		if(!CheckNodeHasAlreadyBeenChecked(NearWaypoints[i]))
+		if (m_currentWaypoint == m_endWaypoint)
 		{
-			Waypoint* waypointToAdd;
-			waypointToAdd = NearWaypoints[i];
-			float distanceFromCurrentWaypoint = m_currentWaypoint->getPosition().Distance(waypointToAdd->getPosition());
+			GeneratePath();
+			return;
+		}
 
-			//Check to see if the node has another parent
-			if(waypointToAdd->GetParentWaypoint() != nullptr)
+		vecWaypoints NearWaypoints = m_wpm->getNeighbouringWaypoints(m_currentWaypoint);
+
+		for (int i = 0; i < NearWaypoints.size(); ++i)
+		{
+			if (!CheckNodeHasAlreadyBeenChecked(NearWaypoints[i]))
 			{
-				//Comparing fvalues with current waypoint if the waypoint being checked has a parent waypoint
-				Waypoint* temp = waypointToAdd;
-				temp->SetNodeGValue(m_currentWaypoint->GetNodeGValue() + distanceFromCurrentWaypoint);
-				temp->SetNodeHValue(waypointToAdd->getPosition().Distance(m_endWaypoint->getPosition()));
-				temp->SetNodeFValue();
-				
-				//Re-parenting waypoint if fvalue is smaller
-				if(temp->GetNodeFValue() < waypointToAdd->GetNodeFValue())
+				Waypoint* waypointToAdd;
+				waypointToAdd = NearWaypoints[i];
+				float distanceFromCurrentWaypoint = m_currentWaypoint->getPosition().Distance(waypointToAdd->getPosition());
+
+				//Check to see if the node has another parent
+				if (waypointToAdd->GetParentWaypoint() != nullptr)
 				{
-					waypointToAdd->SetParentWaypoint(m_currentWaypoint);
-					waypointToAdd->SetNodeGValue(temp->GetNodeGValue());
-					waypointToAdd->SetNodeHValue(temp->GetNodeHValue());
-					waypointToAdd->SetNodeFValue();
+					//Comparing fvalues with current waypoint if the waypoint being checked has a parent waypoint
+					Waypoint* temp = waypointToAdd;
+					temp->SetNodeGValue(m_currentWaypoint->GetNodeGValue() + distanceFromCurrentWaypoint);
+					temp->SetNodeHValue(waypointToAdd->getPosition().Distance(m_endWaypoint->getPosition()));
+					temp->SetNodeFValue();
+
+					//Re-parenting waypoint if fvalue is smaller
+					if (temp->GetNodeFValue() < waypointToAdd->GetNodeFValue())
+					{
+						waypointToAdd->SetParentWaypoint(m_currentWaypoint);
+						waypointToAdd->SetNodeGValue(temp->GetNodeGValue());
+						waypointToAdd->SetNodeHValue(temp->GetNodeHValue());
+						waypointToAdd->SetNodeFValue();
+					}
+
 				}
-				
+				else
+				{
+					//Calculating values for waypoint and setting parent
+					waypointToAdd->SetParentWaypoint(m_currentWaypoint);
+					waypointToAdd->SetNodeGValue(m_currentWaypoint->GetNodeGValue() + distanceFromCurrentWaypoint);
+					waypointToAdd->SetNodeHValue(waypointToAdd->getPosition().Distance(m_endWaypoint->getPosition()));
+					waypointToAdd->SetNodeFValue();
+
+					m_FreeWaypoints.push_back(waypointToAdd);
+				}
+
+
 			}
-			else
-			{
-				//Calculating values for waypoint and setting parent
-				waypointToAdd->SetParentWaypoint(m_currentWaypoint);
-				waypointToAdd->SetNodeGValue(m_currentWaypoint->GetNodeGValue() + distanceFromCurrentWaypoint);
-				waypointToAdd->SetNodeHValue(waypointToAdd->getPosition().Distance(m_endWaypoint->getPosition()));
-				waypointToAdd->SetNodeFValue();	
-
-				m_FreeWaypoints.push_back(waypointToAdd);
-			}			
-
-			
 		}
 	}
 }

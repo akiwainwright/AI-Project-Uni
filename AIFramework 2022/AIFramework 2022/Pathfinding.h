@@ -18,7 +18,7 @@ private:
 	bool m_isFindingPath = false;
 	bool m_hasSpeedBoost = false;
 
-	float m_maxFuel = 15.0f;
+	float m_maxFuel = 85.0f;
 	float m_fuelLossPerFrame = 5.0f;
 	float m_fuel;
 	float m_speedMultiplier = 2.5f;

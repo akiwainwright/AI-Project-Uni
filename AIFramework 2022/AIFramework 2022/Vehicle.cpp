@@ -102,13 +102,10 @@ Vehicle::~Vehicle()
 	delete m_waypointManager;
 	m_waypointManager = nullptr;
 
-	delete m_FleeTarget;
 	m_FleeTarget = nullptr;
 
-	delete m_PursuitTarget;
 	m_PursuitTarget = nullptr;
 
-	delete m_AvoidTarget;
 	m_AvoidTarget = nullptr;
 }
 
